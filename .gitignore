@@ -4,6 +4,8 @@ node_modules
 /build/bin
 /build/linux
 
+go.sum
+
 # Editor directories and files
 .idea
 .vscode
