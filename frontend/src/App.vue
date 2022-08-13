@@ -34,7 +34,7 @@
           <el-icon>
             <document-add/>
           </el-icon>
-          <span>All Hosts</span>
+          <span>Add Host</span>
         </el-menu-item>
       </el-menu>
     </el-col>
@@ -55,7 +55,7 @@
           <el-input v-model="addHostForm.ip" placeholder="e.g. 127.0.0.1" class="el-col-10"/>
         </el-form-item>
         <el-form-item label="Host">
-          <el-input v-model="addHostForm.host" placeholder="e.g. www.domain.com" class="el-col-10"/>
+          <el-input v-model="addHostForm.hostname" placeholder="e.g. www.domain.com" class="el-col-10"/>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
@@ -71,7 +71,7 @@ import CodeEditor from './components/CodeEditor.vue'
 import {reactive, ref} from "vue";
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
-import {GetHosts, SaveAllHosts} from "../wailsjs/go/main/App";
+import {AddHost, GetHosts, SaveAllHosts} from "../wailsjs/go/main/App";
 
 const value1 = ref(true)
 const value2 = ref(true)
@@ -84,7 +84,7 @@ const activeIndex = ref('all_hosts')
 const addHostForm = reactive({
   groupName: '',
   ip: '',
-  host: '',
+  hostname: '',
 })
 const allHostsForm = reactive({
   allHosts: ''
@@ -109,6 +109,17 @@ const handleSelect = (key: string, keyPath: string[]) => {
 
 const onSubmitAddHost = () => {
   console.log('submit add host!')
+  AddHost(addHostForm.groupName, addHostForm.ip, addHostForm.hostname).then(result => {
+    if (result!==''){
+      ElMessage.error('save failed!' + result)
+    }else{
+      addHostForm.groupName = ''
+      addHostForm.ip = ''
+      addHostForm.hostname = ''
+      ElMessage.success('save successfully!')
+      getHosts()
+    }
+  })
 }
 
 const onSubmitAllHosts = () => {

@@ -96,3 +96,15 @@ func (f *MyHosts) Pretty() {
 		}
 	}
 }
+
+func (f *MyHosts) Add(groupName string, ip string, hostname string) {
+	if _, ok := f.Hosts[groupName]; !ok {
+		f.Hosts[groupName] = map[string]*Host{}
+	}
+	f.Hosts[groupName][hostname] = &Host{
+		Hide:      false,
+		IP:        ip,
+		Hostname:  hostname,
+		GroupName: groupName,
+	}
+}

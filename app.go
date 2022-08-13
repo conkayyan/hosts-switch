@@ -3,7 +3,6 @@ package main
 import (
 	"changeme/hosts"
 	"context"
-	"fmt"
 	"log"
 )
 
@@ -33,11 +32,6 @@ func (a *App) startup(ctx context.Context) {
 	a.myHosts.Print()
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
 // GetHostList
 func (a *App) GetHostList() map[string]map[string]*hosts.Host {
 	return a.myHosts.Hosts
@@ -52,6 +46,17 @@ func (a *App) GetHosts() string {
 func (a *App) SaveAllHosts(hostsText string) string {
 	a.myHosts.HostsText = hostsText
 	a.myHosts.Split()
+	a.myHosts.Pretty()
+	err := a.myHosts.Write()
+	if err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// AddHost
+func (a *App) AddHost(groupName string, ip string, hostname string) string {
+	a.myHosts.Add(groupName, ip, hostname)
 	a.myHosts.Pretty()
 	err := a.myHosts.Write()
 	if err != nil {
