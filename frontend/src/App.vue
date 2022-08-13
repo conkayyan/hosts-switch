@@ -1,9 +1,9 @@
 <template>
   <el-row class="tac">
-    <el-col :span="6">
+    <el-col :span="6" class="border-right">
       <el-menu
           default-active="1-1-1"
-          class="el-menu-vertical-demo"
+          class="no-border-right"
           @open="handleOpen"
           @close="handleClose"
       >
@@ -71,10 +71,10 @@ const form = reactive({
 })
 
 const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
+  console.log('open', key, keyPath)
 }
 const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
+  console.log('close', key, keyPath)
 }
 
 const onSubmit = () => {
@@ -84,4 +84,7 @@ const onSubmit = () => {
 
 <style scoped>
 .ml-2 {margin-left: 20px;}
+.mt-2 {margin-top: 20px;}
+.border-right {border-right: 1px solid var(--el-border-color);}
+.no-border-right { border: none; }
 </style>

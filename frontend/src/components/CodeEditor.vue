@@ -1,7 +1,8 @@
 <template>
   <codemirror
       v-model="code"
-      placeholder="Please input..."
+      placeholder="# e.g.
+127.0.0.1 localhost"
       :style="{ height: '600px', width: '630px' }"
       :autofocus="true"
       :indent-with-tab="true"
