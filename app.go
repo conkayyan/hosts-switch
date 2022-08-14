@@ -75,3 +75,14 @@ func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	}
 	return ""
 }
+
+// SwitchByHostname
+func (a *App) SwitchByHostname(groupName string, hostname string, show bool) string {
+	a.myHosts.SwitchByHostname(groupName, hostname, show)
+	a.myHosts.Pretty()
+	err := a.myHosts.Write()
+	if err != nil {
+		return err.Error()
+	}
+	return ""
+}

@@ -186,8 +186,23 @@ func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
 	}
 	groupInfo := f.Hosts[groupName]
 	groupInfo.Show = show
-	for hostname := range groupInfo.List{
+	for hostname := range groupInfo.List {
 		groupInfo.List[hostname].Show = show
+	}
+	f.Hosts[groupName] = groupInfo
+}
+
+func (f *MyHosts) SwitchByHostname(groupName string, hostname string, show bool) {
+	if _, ok := f.Hosts[groupName]; !ok {
+		return
+	}
+	groupInfo := f.Hosts[groupName]
+	if _, ok := groupInfo.List[hostname]; !ok {
+		return
+	}
+	groupInfo.List[hostname].Show = show
+	if len(groupInfo.List) == 1 {
+		groupInfo.Show = show
 	}
 	f.Hosts[groupName] = groupInfo
 }
