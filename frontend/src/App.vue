@@ -20,7 +20,7 @@
             <span>Host Groups</span>
           </template>
           <el-sub-menu :index="groupName" v-for="(group, groupName) in hostsList.list">
-            <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @click.stop /></el-col></template>
+            <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop /></el-col></template>
             <el-menu-item :index="row.hostname" :title="row.ip" v-for="row in group.list"><el-checkbox v-model="row.show" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
@@ -65,7 +65,7 @@ import CodeEditor from './components/CodeEditor.vue'
 import {reactive, ref} from "vue";
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
-import {AddHost, GetHosts, GetHostsList, SaveAllHosts} from "../wailsjs/go/main/App";
+import {AddHost, GetHosts, GetHostsList, SaveAllHosts, SwitchByGroupName} from "../wailsjs/go/main/App";
 
 const activeIndex = ref('all_hosts')
 const hostsList = reactive({list:{}})
@@ -100,6 +100,19 @@ const handleSelect = (key: string, keyPath: string[]) => {
   } else if (key === 'add_host') {
     activeIndex.value = key
   }
+}
+
+const handleSwitchByGroupName = (group) => {
+  console.log('switch', group.group_name, group.show)
+  SwitchByGroupName(group.group_name, group.show).then(result => {
+    if (result!==''){
+      ElMessage.error('switch failed!' + result)
+    }else{
+      ElMessage.success('switch successfully!')
+      getHosts()
+      getHostsList()
+    }
+  })
 }
 
 const onSubmitAddHost = () => {

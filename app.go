@@ -64,3 +64,14 @@ func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	}
 	return ""
 }
+
+// SwitchByGroupName
+func (a *App) SwitchByGroupName(groupName string, show bool) string {
+	a.myHosts.SwitchByGroupName(groupName, show)
+	a.myHosts.Pretty()
+	err := a.myHosts.Write()
+	if err != nil {
+		return err.Error()
+	}
+	return ""
+}

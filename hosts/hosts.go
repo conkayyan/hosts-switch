@@ -179,3 +179,15 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 		GroupName: groupName,
 	}
 }
+
+func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
+	if _, ok := f.Hosts[groupName]; !ok {
+		return
+	}
+	groupInfo := f.Hosts[groupName]
+	groupInfo.Show = show
+	for hostname := range groupInfo.List{
+		groupInfo.List[hostname].Show = show
+	}
+	f.Hosts[groupName] = groupInfo
+}
