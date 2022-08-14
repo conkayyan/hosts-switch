@@ -65,6 +65,17 @@ func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	return ""
 }
 
+// DeleteHost
+func (a *App) DeleteHost(groupName string, hostname string) string {
+	a.myHosts.Delete(groupName, hostname)
+	a.myHosts.Pretty()
+	err := a.myHosts.Write()
+	if err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 // SwitchByGroupName
 func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	a.myHosts.SwitchByGroupName(groupName, show)

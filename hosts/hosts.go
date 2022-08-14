@@ -180,6 +180,20 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 	}
 }
 
+func (f *MyHosts) Delete(groupName string, hostname string) {
+	if _, ok := f.Hosts[groupName]; !ok {
+		f.Hosts[groupName] = Group{
+			GroupName: groupName,
+			Show:      true,
+			List:      map[string]*Host{},
+		}
+	}
+	delete(f.Hosts[groupName].List, hostname)
+	if len(f.Hosts[groupName].List) == 0 {
+		delete(f.Hosts, groupName)
+	}
+}
+
 func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
 	if _, ok := f.Hosts[groupName]; !ok {
 		return

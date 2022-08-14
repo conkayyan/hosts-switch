@@ -36,7 +36,7 @@
     </el-col>
     <el-col :span="16" class="show-content">
       <el-form :model="allHostsForm" class="mt-2 ml-2" v-if="activeIndex==='all_hosts'">
-        <el-alert title="e.g. IP Hostname # Group Name One # Group Name Two" type="warning" effect="dark" class="el-col-22 el-col-lg-12" />
+        <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="warning" effect="dark" class="el-col-22 el-col-lg-12" />
         <el-form-item class="mt-2">
           <CodeEditor v-model="allHostsForm.allHosts" />
         </el-form-item>
@@ -69,19 +69,12 @@
             <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostname(scope.row)" size="large" />
           </template>
         </el-table-column>
-        <el-table-column prop="ip" label="IP" width="180" />
+        <el-table-column prop="ip" label="IP" width="150" />
         <el-table-column prop="hostname" label="Hostname" />
-        <el-table-column label="Operations">
+        <el-table-column label="Operations" width="200" >
           <template #default="scope">
-            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)"
-            >Edit</el-button
-            >
-            <el-button
-                size="small"
-                type="danger"
-                @click="handleDeleteHost(scope.$index, scope.row)"
-            >Delete</el-button
-            >
+<!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+            <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -97,6 +90,7 @@ import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
 import {
   AddHost,
+  DeleteHost,
   GetHosts,
   GetHostsList,
   SaveAllHosts,
@@ -115,12 +109,7 @@ const addHostForm = reactive({
 const allHostsForm = reactive({
   allHosts: ''
 })
-interface Group {
-  show: boolean
-  ip: string
-  hostname: string
-}
-const tableData: Group[] = []
+const tableData = ref([])
 
 function getHosts() {
   GetHosts().then(result => {
@@ -144,11 +133,11 @@ const handleSelect = (key: string, keyPath: string[]) => {
   } else if (key === 'add_host') {
     activeIndex.value = key
   } else if (key.substring(0, 10) === 'show_group') {
-    tableData.splice(0, tableData.length)
+    tableData.value.splice(0, tableData.value.length)
     groupName.value = key.substring(11)
     let groupInfo = hostsList.list[groupName.value].list
     for (let k in groupInfo){
-      tableData.push(groupInfo[k])
+      tableData.value.push(groupInfo[k])
     }
     activeIndex.value = 'show_group'
     console.log(tableData)
@@ -161,9 +150,9 @@ const handleSwitchByGroupName = (group) => {
     if (result!==''){
       ElMessage.error('switch failed!' + result)
     }else{
-      ElMessage.success('switch successfully!')
       getHosts()
       getHostsList()
+      ElMessage.success('switch successfully!')
     }
   })
 }
@@ -174,9 +163,23 @@ const handleSwitchByHostname = (row) => {
     if (result!==''){
       ElMessage.error('switch failed!' + result)
     }else{
-      ElMessage.success('switch successfully!')
       getHosts()
       getHostsList()
+      ElMessage.success('switch successfully!')
+    }
+  })
+}
+
+const handleDeleteHost = (index, row) => {
+  console.log('delete', index, row.group_name, row.hostname)
+  DeleteHost(row.group_name, row.hostname).then(result => {
+    if (result!==''){
+      ElMessage.error('delete failed!' + result)
+    }else{
+      tableData.value.splice(index, 1)
+      getHosts()
+      getHostsList()
+      ElMessage.success('delete successfully!')
     }
   })
 }
@@ -190,9 +193,9 @@ const onSubmitAddHost = () => {
       addHostForm.groupName = ''
       addHostForm.ip = ''
       addHostForm.hostname = ''
-      ElMessage.success('save successfully!')
       getHosts()
       getHostsList()
+      ElMessage.success('save successfully!')
     }
   })
 }
@@ -203,9 +206,9 @@ const onSubmitAllHosts = () => {
     if (result!==''){
       ElMessage.error('save failed!' + result)
     }else{
-      ElMessage.success('save successfully!')
       getHosts()
       getHostsList()
+      ElMessage.success('save successfully!')
     }
   })
 }
