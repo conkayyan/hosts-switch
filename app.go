@@ -32,8 +32,8 @@ func (a *App) startup(ctx context.Context) {
 	a.myHosts.Print()
 }
 
-// GetHostList
-func (a *App) GetHostList() map[string]map[string]*hosts.Host {
+// GetHostsList
+func (a *App) GetHostsList() hosts.Hosts {
 	return a.myHosts.Hosts
 }
 

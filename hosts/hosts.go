@@ -9,22 +9,30 @@ import (
 )
 
 type Host struct {
-	Hide      bool   `json:"hide"`
+	Show      bool   `json:"show"`
 	IP        string `json:"ip"`
 	Hostname  string `json:"hostname"`
 	GroupName string `json:"group_name"`
 }
 
+type Group struct {
+	GroupName string           `json:"group_name"`
+	Show      bool             `json:"show"`
+	List      map[string]*Host `json:"list"`
+}
+
+type Hosts map[string]Group
+
 type MyHosts struct {
-	Path      string                      `json:"path"`
-	HostsText string                      `json:"hosts_text"`
-	Hosts     map[string]map[string]*Host `json:"hosts"`
+	Path      string
+	HostsText string
+	Hosts     Hosts
 }
 
 type M map[string]string
 
 type HostUnique struct {
-	Hide      bool
+	Show      bool
 	IP        string
 	Hostname  string
 	GroupName M
@@ -42,7 +50,7 @@ func NewMyHosts() *MyHosts {
 	return &MyHosts{
 		Path:      getHostPath(),
 		HostsText: "",
-		Hosts:     map[string]map[string]*Host{},
+		Hosts:     Hosts{},
 	}
 }
 
@@ -65,7 +73,7 @@ func (f *MyHosts) Print() {
 }
 
 func (f *MyHosts) Split() {
-	f.Hosts = map[string]map[string]*Host{}
+	f.Hosts = Hosts{}
 	hosts := strings.Split(f.HostsText, "\n")
 	for _, host := range hosts {
 		re := regexp.MustCompile(`^([# ]*)([0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}|[a-zA-Z0-9:]{2,})[ ]+([a-zA-Z0-9. \-]*)+([#]+[ ]*(.*?))?$`)
@@ -73,7 +81,7 @@ func (f *MyHosts) Split() {
 		if len(res) == 0 {
 			continue
 		}
-		hide := strings.Contains(res[1], "#")
+		show := !strings.Contains(res[1], "#")
 		for _, hostname := range strings.Split(res[3], " ") {
 			hostname = strings.TrimSpace(hostname)
 			if hostname == "" {
@@ -95,16 +103,25 @@ func (f *MyHosts) Split() {
 			}
 			for _, groupName := range groupNames {
 				if _, ok := f.Hosts[groupName]; !ok {
-					f.Hosts[groupName] = map[string]*Host{}
+					f.Hosts[groupName] = Group{
+						GroupName: groupName,
+						Show:      true,
+						List:      map[string]*Host{},
+					}
 				}
-				f.Hosts[groupName][hostname] = &Host{
-					Hide:      hide,
+				if !show {
+					groupInfo := f.Hosts[groupName]
+					groupInfo.Show = false
+					f.Hosts[groupName] = groupInfo
+				}
+				f.Hosts[groupName].List[hostname] = &Host{
+					Show:      show,
 					IP:        res[2],
 					Hostname:  hostname,
 					GroupName: groupName,
 				}
 				log.Println(Host{
-					Hide:      hide,
+					Show:      show,
 					IP:        res[2],
 					Hostname:  hostname,
 					GroupName: groupName,
@@ -117,42 +134,46 @@ func (f *MyHosts) Split() {
 func (f *MyHosts) Pretty() {
 	f.HostsText = ""
 	var allHostsUnique = map[string]HostUnique{}
-	for groupName, hosts := range f.Hosts {
-		for hostname, host := range hosts {
+	for _, hosts := range f.Hosts {
+		for hostname, host := range hosts.List {
 			var key string
-			if host.Hide {
-				key = fmt.Sprintf("%s_#", hostname)
-			} else {
+			if host.Show {
 				key = fmt.Sprintf("%s_", hostname)
+			} else {
+				key = fmt.Sprintf("%s_#", hostname)
 			}
 			if _, ok := allHostsUnique[key]; !ok {
 				allHostsUnique[key] = HostUnique{
-					Hide:      host.Hide,
+					Show:      host.Show,
 					IP:        host.IP,
 					Hostname:  hostname,
-					GroupName: M{groupName: groupName},
+					GroupName: M{hosts.GroupName: hosts.GroupName},
 				}
 			} else {
-				allHostsUnique[key].GroupName[groupName] = groupName
+				allHostsUnique[key].GroupName[hosts.GroupName] = hosts.GroupName
 			}
 		}
 	}
 	for _, row := range allHostsUnique {
 		groupName := strings.Join(row.GroupName.toSlice(), " # ")
-		if row.Hide {
-			f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, groupName)
-		} else {
+		if row.Show {
 			f.HostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, groupName)
+		} else {
+			f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, groupName)
 		}
 	}
 }
 
 func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 	if _, ok := f.Hosts[groupName]; !ok {
-		f.Hosts[groupName] = map[string]*Host{}
+		f.Hosts[groupName] = Group{
+			GroupName: groupName,
+			Show:      true,
+			List:      map[string]*Host{},
+		}
 	}
-	f.Hosts[groupName][hostname] = &Host{
-		Hide:      false,
+	f.Hosts[groupName].List[hostname] = &Host{
+		Show:      true,
 		IP:        ip,
 		Hostname:  hostname,
 		GroupName: groupName,

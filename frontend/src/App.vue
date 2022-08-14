@@ -1,6 +1,6 @@
 <template>
   <el-row class="tac">
-    <el-col :span="6" class="border-right">
+    <el-col :span="8" class="border-right">
       <el-menu
           class="no-border-right"
           default-active="all_hosts"
@@ -12,22 +12,16 @@
           </el-icon>
           <span>All Hosts</span>
         </el-menu-item>
-        <el-sub-menu index="1">
+        <el-sub-menu index="host_groups">
           <template #title>
             <el-icon>
               <icon-menu/>
             </el-icon>
             <span>Host Groups</span>
           </template>
-          <el-sub-menu index="1-1">
-            <template #title>Group One<el-switch class="ml-2" v-model="value1" @click.stop /></template>
-            <el-menu-item index="1-1-1"><el-checkbox v-model="checked1" label="item one" size="large" /></el-menu-item>
-            <el-menu-item index="1-1-2"><el-checkbox v-model="checked2" label="item two" size="large" /></el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="1-2">
-            <template #title>Group Two<el-switch class="ml-2" v-model="value2" @click.stop /></template>
-            <el-menu-item index="1-2-1"><el-checkbox v-model="checked3" label="item one" size="large" /></el-menu-item>
-            <el-menu-item index="1-2-2"><el-checkbox v-model="checked4" label="item two" size="large" /></el-menu-item>
+          <el-sub-menu :index="groupName" v-for="(group, groupName) in hostsList.list">
+            <template #title>{{groupName}}<el-switch class="ml-2" v-model="group.show" @click.stop /></template>
+            <el-menu-item :index="row.hostname" :title="row.ip" v-for="row in group.list"><el-checkbox v-model="row.show" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
         <el-menu-item index="add_host">
@@ -38,7 +32,7 @@
         </el-menu-item>
       </el-menu>
     </el-col>
-    <el-col :span="18">
+    <el-col :span="16">
       <el-form :model="allHostsForm" class="mt-2 ml-2" v-if="activeIndex==='all_hosts'">
         <el-form-item>
           <CodeEditor v-model="allHostsForm.allHosts" />
@@ -71,16 +65,10 @@ import CodeEditor from './components/CodeEditor.vue'
 import {reactive, ref} from "vue";
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
-import {AddHost, GetHosts, SaveAllHosts} from "../wailsjs/go/main/App";
+import {AddHost, GetHosts, GetHostsList, SaveAllHosts} from "../wailsjs/go/main/App";
 
-const value1 = ref(true)
-const value2 = ref(true)
-const checked1 = ref(true)
-const checked2 = ref(true)
-const checked3 = ref(true)
-const checked4 = ref(true)
-const result = ref('')
 const activeIndex = ref('all_hosts')
+const hostsList = reactive({list:{}})
 const addHostForm = reactive({
   groupName: '',
   ip: '',
@@ -97,10 +85,17 @@ function getHosts() {
 }
 getHosts()
 
+function getHostsList() {
+  GetHostsList().then(result => {
+    console.log("list", result)
+    hostsList.list = result
+  })
+}
+getHostsList()
+
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log('select', key, keyPath)
   if (key === 'all_hosts') {
-    getHosts()
     activeIndex.value = key
   } else if (key === 'add_host') {
     activeIndex.value = key
@@ -118,6 +113,7 @@ const onSubmitAddHost = () => {
       addHostForm.hostname = ''
       ElMessage.success('save successfully!')
       getHosts()
+      getHostsList()
     }
   })
 }
@@ -130,6 +126,7 @@ const onSubmitAllHosts = () => {
     }else{
       ElMessage.success('save successfully!')
       getHosts()
+      getHostsList()
     }
   })
 }
