@@ -20,7 +20,7 @@
             <span>Host Groups</span>
           </template>
           <el-sub-menu :index="groupName" v-for="(group, groupName) in hostsList.list">
-            <template #title>{{groupName}}<el-switch class="ml-2" v-model="group.show" @click.stop /></template>
+            <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @click.stop /></el-col></template>
             <el-menu-item :index="row.hostname" :title="row.ip" v-for="row in group.list"><el-checkbox v-model="row.show" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
@@ -32,7 +32,7 @@
         </el-menu-item>
       </el-menu>
     </el-col>
-    <el-col :span="16">
+    <el-col :span="16" class="show-content">
       <el-form :model="allHostsForm" class="mt-2 ml-2" v-if="activeIndex==='all_hosts'">
         <el-form-item>
           <CodeEditor v-model="allHostsForm.allHosts" />
@@ -133,6 +133,8 @@ const onSubmitAllHosts = () => {
 </script>
 
 <style scoped>
+.show-content{height: 100vh;}
+.menu-switch{position: absolute; right: 0; padding-right: 50px;}
 .ml-2 {margin-left: 20px;}
 .mt-2 {margin-top: 20px;}
 .border-right {border-right: 1px solid var(--el-border-color);}
