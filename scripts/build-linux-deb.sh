@@ -12,7 +12,7 @@ mkdir -p build/linux/$APPDIR/usr/share/icons/hicolor/1024x1024/apps
 mkdir -p build/linux/$APPDIR/usr/share/icons/hicolor/256x256/apps
 mkdir -p build/linux/$APPDIR/DEBIAN
 
-wails build
+wails build --clean --platform linux/amd64
 cp build/bin/hosts-switch build/linux/$APPDIR/usr/bin/${APP}
 
 cp build/appicon.png build/linux/$APPDIR/usr/share/icons/hicolor/1024x1024/apps/${APP}.png
