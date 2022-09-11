@@ -2,10 +2,13 @@
 
 ## About
 
-This is the official Wails Vue template.
+This is a simple desktop application developed based on [wails](https://wails.io/), compatible with Linux, Windows and Mac, which can help you better maintain your local hosts configuration.
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+## Environmental Requirements
+Based on go v1.17, wails v2.0.0-beta.43, nodejs v16
+
+## Installing Wails
+Run `go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43` to install the Wails CLI.
 
 ## Live Development
 
