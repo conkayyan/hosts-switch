@@ -21,6 +21,10 @@ jobs:
             binary-name: hosts-switch_windows_amd64_${{ github.ref_name }}
             binary-path: ./build/bin/
             format: '.exe'
+          - runs-on: macos-latest
+            binary-name: hosts-switch_darwin_amd64_${{ github.ref_name }}
+            binary-path: ./build/bin/
+            format: '.app'
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -83,6 +87,13 @@ jobs:
           cd ${{ matrix.binary-path }}
           ren hosts-switch.exe ${{ matrix.binary-name }}${{ matrix.format }}
 
+      - name: Build MacOs
+        if: ${{ matrix.runs-on == 'macos-latest' }}
+        run: |
+          wails build --clean --platform darwin/amd64
+          cd ${{ matrix.binary-path }}
+          mv hosts-switch.app ${{ matrix.binary-name }}${{ matrix.format }}
+
       - name: Archive Release
         uses: thedoctor0/zip-release@main
         with:
@@ -99,6 +110,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload Release Asset
+        if: ${{ matrix.runs-on != 'macos-latest' }}
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
