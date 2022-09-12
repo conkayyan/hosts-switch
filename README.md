@@ -22,3 +22,11 @@ to this in your browser, and you can call your Go code from devtools.
 ## Building
 
 To build a redistributable, production mode package, use `wails build`.
+
+## Download
+
+Linux: [hosts-switch_linux_amd64_v0.0.3.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.3/hosts-switch_linux_amd64_v0.0.3.deb), [hosts-switch_linux_amd64_v0.0.3.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.3/hosts-switch_linux_amd64_v0.0.3.zip)
+
+Windows: [hosts-switch_windows_amd64_v0.0.3.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.3/hosts-switch_windows_amd64_v0.0.3.exe), [hosts-switch_windows_amd64_v0.0.3.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.3/hosts-switch_windows_amd64_v0.0.3.zip)
+
+MacOs: [hosts-switch_darwin_amd64_v0.0.3.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.3/hosts-switch_darwin_amd64_v0.0.3.zip)
