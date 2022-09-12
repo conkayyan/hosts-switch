@@ -5,7 +5,9 @@
 This is a simple desktop application developed based on [wails](https://wails.io/), compatible with Linux, Windows and Mac, which can help you better maintain your local hosts configuration.
 
 ## Environmental Requirements
-Based on go v1.17, wails v2.0.0-beta.43, nodejs v16
+Based on go v1.17, wails v2.0.0-beta.43, nodejs v16. 
+
+Wails applications built for Windows have a runtime requirement on the Microsoft WebView2 Runtime. Windows 11 will have this installed by default, but some machines won't.
 
 ## Installing Wails
 Run `go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43` to install the Wails CLI.

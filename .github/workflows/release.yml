@@ -17,6 +17,10 @@ jobs:
             binary-name: hosts-switch_linux_amd64_${{ github.ref_name }}
             binary-path: ./build/linux/
             format: '.deb'
+          - runs-on: windows-latest
+            binary-name: hosts-switch_windows_amd64_${{ github.ref_name }}
+            binary-path: ./build/bin/
+            format: '.exe'
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -40,21 +44,44 @@ jobs:
         with:
           go-version: 1.17
 
-      - name: Set up Environment
+      - name: Set up Linux Environment
+        if: ${{ matrix.runs-on == 'ubuntu-latest' }}
         run: |
           sudo apt-get install libwebkit2gtk-4.0-dev
           sudo apt install libgtk-3-dev
           sudo apt install nsis
-          go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43
+
+      #- name: Run Windows UPX
+      #  if: ${{ matrix.runs-on == 'windows-latest' }}
+      #  uses: crazy-max/ghaction-upx@v2
+      #  with:
+      #    version: v3.96
+      #  files: |
+      #    ./build/bin/hosts-switch.exe
+      #  args: -fq
+
+      #- name: Set Windows UPX
+      #  run: setx -m PATH '%PATH%;C:\hostedtoolcache\windows\ghaction-upx\3.96\x64\upx-3.96-win64\'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43
 
       - name: Check Environment
         run: wails doctor
 
-      - name: Build
+      - name: Build Linux
         if: ${{ matrix.runs-on == 'ubuntu-latest' }}
         run: |
           cd scripts
           sh build-linux-deb.sh ${{ github.ref_name }}
+
+      - name: Build Windows
+        if: ${{ matrix.runs-on == 'windows-latest' }}
+        # run: wails build --clean --platform windows -nsis -webview2 embed
+        run: |
+          wails build --clean --platform windows -webview2 Embed
+          cd ${{ matrix.binary-path }}
+          ren hosts-switch.exe ${{ matrix.binary-name }}${{ matrix.format }}
 
       - name: Archive Release
         uses: thedoctor0/zip-release@main
