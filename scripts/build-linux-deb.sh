@@ -23,8 +23,8 @@ cat > build/linux/${app_dir}/usr/share/applications/${app}.desktop << EOF
 Version=${release}
 Type=Application
 Name=${app_name}
-Exec=$APP
-Icon=$APP
+Exec=${app}
+Icon=${app}
 Terminal=false
 StartupWMClass=Lorca
 EOF
