@@ -33,12 +33,12 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // GetHostsList
-func (a *App) GetHostsList() hosts.Hosts {
-	return a.myHosts.Hosts
+func (a *App) GetHostsList() hosts.ListByGroup {
+	return a.myHosts.ListByGroup
 }
 
-// GetHosts
-func (a *App) GetHosts() string {
+// GetHostsText
+func (a *App) GetHostsText() string {
 	return a.myHosts.HostsText
 }
 
@@ -66,8 +66,8 @@ func (a *App) AddHost(groupName string, ip string, hostname string) string {
 }
 
 // DeleteHost
-func (a *App) DeleteHost(groupName string, hostname string) string {
-	a.myHosts.Delete(groupName, hostname)
+func (a *App) DeleteHost(groupName string, hostNameID int) string {
+	a.myHosts.Delete(groupName, hostNameID)
 	a.myHosts.Pretty()
 	err := a.myHosts.Write()
 	if err != nil {
@@ -87,9 +87,9 @@ func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	return ""
 }
 
-// SwitchByHostname
-func (a *App) SwitchByHostname(groupName string, hostname string, show bool) string {
-	a.myHosts.SwitchByHostname(groupName, hostname, show)
+// SwitchByHostnameId
+func (a *App) SwitchByHostnameId(groupName string, hostNameID int, show bool) string {
+	a.myHosts.SwitchByHostnameId(groupName, hostNameID, show)
 	a.myHosts.Pretty()
 	err := a.myHosts.Write()
 	if err != nil {

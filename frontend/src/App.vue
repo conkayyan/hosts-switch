@@ -23,7 +23,7 @@
           </template>
           <el-sub-menu :index="'show_group:'+groupName" v-for="(group, groupName) in hostsList.list">
             <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop /></el-col></template>
-            <el-menu-item :index="row.hostname" :title="row.ip" v-for="row in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostname(row)" :label="row.hostname" size="large" /></el-menu-item>
+            <el-menu-item :index="id" :title="row.ip" v-for="(row, id) in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostnameId(row)" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
         <el-menu-item index="add_host">
@@ -38,7 +38,7 @@
       <el-form :model="allHostsForm" class="mt-2 ml-2" v-if="activeIndex==='all_hosts'">
         <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="warning" effect="dark" class="el-col-22 el-col-lg-12" />
         <el-form-item class="mt-2">
-          <CodeEditor v-model="allHostsForm.allHosts" />
+          <CodeEditor v-model="allHostsForm.allHostsText" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
@@ -63,10 +63,11 @@
                 style="width: 100%"
                 stripe
                 :key="groupName"
+                :row-key="getRowKey"
       >
         <el-table-column label="Active" width="80" align="center">
           <template #default="scope">
-            <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostname(scope.row)" size="large" />
+            <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)" size="large" />
           </template>
         </el-table-column>
         <el-table-column prop="ip" label="IP" width="150" />
@@ -91,11 +92,11 @@ import 'element-plus/dist/index.css'
 import {
   AddHost,
   DeleteHost,
-  GetHosts,
   GetHostsList,
+  GetHostsText,
   SaveAllHosts,
   SwitchByGroupName,
-  SwitchByHostname
+  SwitchByHostnameId
 } from "../wailsjs/go/main/App";
 
 const groupName = ref('')
@@ -107,24 +108,37 @@ const addHostForm = reactive({
   hostname: '',
 })
 const allHostsForm = reactive({
-  allHosts: ''
+  allHostsText: ''
 })
 const tableData = ref([])
 
-function getHosts() {
-  GetHosts().then(result => {
-    allHostsForm.allHosts = result
+function getHostsText() {
+  GetHostsText().then(result => {
+    allHostsForm.allHostsText = result
   })
 }
-getHosts()
+getHostsText()
 
 function getHostsList() {
   GetHostsList().then(result => {
     console.log("list", result)
     hostsList.list = result
+
+    if (groupName.value !== "") {
+      tableData.value.splice(0, tableData.value.length)
+      let groupInfo = hostsList.list[groupName.value].list
+      for (let k in groupInfo){
+        tableData.value.push(groupInfo[k])
+      }
+      console.log(tableData)
+    }
   })
 }
 getHostsList()
+
+function getRowKey(row){
+  return row.id
+}
 
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log('select', key, keyPath)
@@ -150,20 +164,20 @@ const handleSwitchByGroupName = (group) => {
     if (result!==''){
       ElMessage.error('switch failed!' + result)
     }else{
-      getHosts()
+      getHostsText()
       getHostsList()
       ElMessage.success('switch successfully!')
     }
   })
 }
 
-const handleSwitchByHostname = (row) => {
-  console.log('switch', row.group_name, row.hostname, row.show)
-  SwitchByHostname(row.group_name, row.hostname, row.show).then(result => {
+const handleSwitchByHostnameId = (row) => {
+  console.log('switch', row.group_name, row.id, row.hostname, row.show)
+  SwitchByHostnameId(row.group_name, row.id, row.show).then(result => {
     if (result!==''){
       ElMessage.error('switch failed!' + result)
     }else{
-      getHosts()
+      getHostsText()
       getHostsList()
       ElMessage.success('switch successfully!')
     }
@@ -171,13 +185,13 @@ const handleSwitchByHostname = (row) => {
 }
 
 const handleDeleteHost = (index, row) => {
-  console.log('delete', index, row.group_name, row.hostname)
-  DeleteHost(row.group_name, row.hostname).then(result => {
+  console.log('delete', index, row.group_name, row.hostname, row.id)
+  DeleteHost(row.group_name, row.id).then(result => {
     if (result!==''){
       ElMessage.error('delete failed!' + result)
     }else{
       tableData.value.splice(index, 1)
-      getHosts()
+      getHostsText()
       getHostsList()
       ElMessage.success('delete successfully!')
     }
@@ -193,7 +207,7 @@ const onSubmitAddHost = () => {
       addHostForm.groupName = ''
       addHostForm.ip = ''
       addHostForm.hostname = ''
-      getHosts()
+      getHostsText()
       getHostsList()
       ElMessage.success('save successfully!')
     }
@@ -202,11 +216,11 @@ const onSubmitAddHost = () => {
 
 const onSubmitAllHosts = () => {
   console.log('submit all hosts!')
-  SaveAllHosts(allHostsForm.allHosts).then(result => {
+  SaveAllHosts(allHostsForm.allHostsText).then(result => {
     if (result!==''){
       ElMessage.error('save failed!' + result)
     }else{
-      getHosts()
+      getHostsText()
       getHostsList()
       ElMessage.success('save successfully!')
     }
