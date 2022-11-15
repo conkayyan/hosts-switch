@@ -25,8 +25,8 @@ To build a redistributable, production mode package, use `wails build`.
 
 ## Download
 
-Linux: [hosts-switch_linux_amd64_v0.0.4.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.4/hosts-switch_linux_amd64_v0.0.4.deb), [hosts-switch_linux_amd64_v0.0.4.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.4/hosts-switch_linux_amd64_v0.0.4.zip)
+Linux: [hosts-switch_linux_amd64_v0.0.6.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_linux_amd64_v0.0.6.deb), [hosts-switch_linux_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_linux_amd64_v0.0.6.zip)
 
-Windows: [hosts-switch_windows_amd64_v0.0.4.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.4/hosts-switch_windows_amd64_v0.0.4.exe), [hosts-switch_windows_amd64_v0.0.4.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.4/hosts-switch_windows_amd64_v0.0.4.zip)
+Windows: [hosts-switch_windows_amd64_v0.0.6.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_windows_amd64_v0.0.6.exe), [hosts-switch_windows_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_windows_amd64_v0.0.6.zip)
 
-MacOs: [hosts-switch_darwin_amd64_v0.0.4.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.4/hosts-switch_darwin_amd64_v0.0.4.zip)
+MacOs: [hosts-switch_darwin_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_darwin_amd64_v0.0.6.zip)

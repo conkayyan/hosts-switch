@@ -14,6 +14,12 @@
           </el-icon>
           <span>All Hosts</span>
         </el-menu-item>
+        <el-menu-item index="in_effect">
+          <el-icon>
+            <el-icon-document-checked/>
+          </el-icon>
+          <span>In Effect</span>
+        </el-menu-item>
         <el-sub-menu index="host_groups">
           <template #title>
             <el-icon>
@@ -21,7 +27,7 @@
             </el-icon>
             <span>Host Groups</span>
           </template>
-          <el-sub-menu :index="'show_group:'+groupName" v-for="(group, groupName) in hostsList.list">
+          <el-sub-menu :index="'show_group:'+groupName" v-for="(group, groupName) in listByGroup.list">
             <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop /></el-col></template>
             <el-menu-item :index="id" :title="row.ip" v-for="(row, id) in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostnameId(row)" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
@@ -79,6 +85,28 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-table v-else-if="activeIndex==='in_effect'"
+                :data="tableData"
+                style="width: 100%"
+                stripe
+                :key="groupName"
+                :row-key="getRowKey"
+      >
+        <el-table-column label="Active" width="80" align="center">
+          <template #default="scope">
+            <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)" size="large" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="ip" label="IP" width="150" />
+        <el-table-column prop="hostname" label="Hostname" />
+        <el-table-column prop="group_name" label="Group Name" />
+        <el-table-column label="Operations" width="150" >
+          <template #default="scope">
+<!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+            <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-col>
   </el-row>
 </template>
@@ -92,7 +120,8 @@ import 'element-plus/dist/index.css'
 import {
   AddHost,
   DeleteHost,
-  GetHostsList,
+  GetList,
+  GetListByGroup,
   GetHostsText,
   SaveAllHosts,
   SwitchByGroupName,
@@ -101,7 +130,7 @@ import {
 
 const groupName = ref('')
 const activeIndex = ref('all_hosts')
-const hostsList = reactive({list:{}})
+const listByGroup = reactive({list:{}})
 const addHostForm = reactive({
   groupName: '',
   ip: '',
@@ -119,14 +148,14 @@ function getHostsText() {
 }
 getHostsText()
 
-function getHostsList() {
-  GetHostsList().then(result => {
-    console.log("list", result)
-    hostsList.list = result
+function getListByGroup() {
+  GetListByGroup().then(result => {
+    console.log("listByGroup", result)
+    listByGroup.list = result
 
-    if (groupName.value !== "") {
+    if (groupName.value !== "" && activeIndex.value === "show_group") {
       tableData.value.splice(0, tableData.value.length)
-      let groupInfo = hostsList.list[groupName.value].list
+      let groupInfo = listByGroup.list[groupName.value].list
       for (let k in groupInfo){
         tableData.value.push(groupInfo[k])
       }
@@ -134,7 +163,20 @@ function getHostsList() {
     }
   })
 }
-getHostsList()
+getListByGroup()
+
+function getList() {
+  GetList().then(result => {
+    console.log("list", result)
+
+    tableData.value.splice(0, tableData.value.length)
+    for (let k in result){
+      if (result[k].show){
+        tableData.value.push(result[k])
+      }
+    }
+  })
+}
 
 function getRowKey(row){
   return row.id
@@ -146,10 +188,13 @@ const handleSelect = (key: string, keyPath: string[]) => {
     activeIndex.value = key
   } else if (key === 'add_host') {
     activeIndex.value = key
+  } else if (key === 'in_effect') {
+    activeIndex.value = key
+    getList()
   } else if (key.substring(0, 10) === 'show_group') {
     tableData.value.splice(0, tableData.value.length)
     groupName.value = key.substring(11)
-    let groupInfo = hostsList.list[groupName.value].list
+    let groupInfo = listByGroup.list[groupName.value].list
     for (let k in groupInfo){
       tableData.value.push(groupInfo[k])
     }
@@ -165,7 +210,7 @@ const handleSwitchByGroupName = (group) => {
       ElMessage.error('switch failed!' + result)
     }else{
       getHostsText()
-      getHostsList()
+      getListByGroup()
       ElMessage.success('switch successfully!')
     }
   })
@@ -178,7 +223,7 @@ const handleSwitchByHostnameId = (row) => {
       ElMessage.error('switch failed!' + result)
     }else{
       getHostsText()
-      getHostsList()
+      getListByGroup()
       ElMessage.success('switch successfully!')
     }
   })
@@ -192,7 +237,7 @@ const handleDeleteHost = (index, row) => {
     }else{
       tableData.value.splice(index, 1)
       getHostsText()
-      getHostsList()
+      getListByGroup()
       ElMessage.success('delete successfully!')
     }
   })
@@ -208,7 +253,7 @@ const onSubmitAddHost = () => {
       addHostForm.ip = ''
       addHostForm.hostname = ''
       getHostsText()
-      getHostsList()
+      getListByGroup()
       ElMessage.success('save successfully!')
     }
   })
@@ -221,7 +266,7 @@ const onSubmitAllHosts = () => {
       ElMessage.error('save failed!' + result)
     }else{
       getHostsText()
-      getHostsList()
+      getListByGroup()
       ElMessage.success('save successfully!')
     }
   })
