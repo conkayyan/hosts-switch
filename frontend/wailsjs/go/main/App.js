@@ -10,12 +10,16 @@ export function DeleteHost(arg1, arg2) {
   return window['go']['main']['App']['DeleteHost'](arg1, arg2);
 }
 
-export function GetHostsList() {
-  return window['go']['main']['App']['GetHostsList']();
-}
-
 export function GetHostsText() {
   return window['go']['main']['App']['GetHostsText']();
+}
+
+export function GetList() {
+  return window['go']['main']['App']['GetList']();
+}
+
+export function GetListByGroup() {
+  return window['go']['main']['App']['GetListByGroup']();
 }
 
 export function SaveAllHosts(arg1) {

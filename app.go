@@ -32,8 +32,13 @@ func (a *App) startup(ctx context.Context) {
 	a.myHosts.Print()
 }
 
-// GetHostsList
-func (a *App) GetHostsList() hosts.ListByGroup {
+// GetList
+func (a *App) GetList() hosts.List {
+	return a.myHosts.List
+}
+
+// GetListByGroup
+func (a *App) GetListByGroup() hosts.ListByGroup {
 	return a.myHosts.ListByGroup
 }
 
