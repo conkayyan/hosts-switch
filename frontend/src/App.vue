@@ -69,7 +69,6 @@
                 style="width: 100%"
                 stripe
                 :key="groupName"
-                :row-key="getRowKey"
       >
         <el-table-column label="Active" width="80" align="center">
           <template #default="scope">
@@ -90,7 +89,6 @@
                 style="width: 100%"
                 stripe
                 :key="groupName"
-                :row-key="getRowKey"
       >
         <el-table-column label="Active" width="80" align="center">
           <template #default="scope">
@@ -178,10 +176,6 @@ function getList() {
   })
 }
 
-function getRowKey(row){
-  return row.id
-}
-
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log('select', key, keyPath)
   if (key === 'all_hosts') {
@@ -190,15 +184,16 @@ const handleSelect = (key: string, keyPath: string[]) => {
     activeIndex.value = key
   } else if (key === 'in_effect') {
     activeIndex.value = key
+    groupName.value = key
     getList()
   } else if (key.substring(0, 10) === 'show_group') {
+    activeIndex.value = key.substring(0, 10)
     tableData.value.splice(0, tableData.value.length)
     groupName.value = key.substring(11)
     let groupInfo = listByGroup.list[groupName.value].list
     for (let k in groupInfo){
       tableData.value.push(groupInfo[k])
     }
-    activeIndex.value = 'show_group'
     console.log(tableData)
   }
 }
