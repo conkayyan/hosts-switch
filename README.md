@@ -5,12 +5,12 @@
 This is a simple desktop application developed based on [wails](https://wails.io/), compatible with Linux, Windows and Mac, which can help you better maintain your local hosts configuration.
 
 ## Environmental Requirements
-Based on go v1.17, wails v2.0.0-beta.43, nodejs v16. 
+Based on go v1.18+, wails v2.4.0, nodejs v16. 
 
 Wails applications built for Windows have a runtime requirement on the Microsoft WebView2 Runtime. Windows 11 will have this installed by default, but some machines won't.
 
 ## Installing Wails
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43` to install the Wails CLI.
+Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
 
 ## Live Development
 
@@ -25,8 +25,8 @@ To build a redistributable, production mode package, use `wails build`.
 
 ## Download
 
-Linux: [hosts-switch_linux_amd64_v0.0.6.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_linux_amd64_v0.0.6.deb), [hosts-switch_linux_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_linux_amd64_v0.0.6.zip)
+Linux: [hosts-switch_linux_amd64_v0.0.8.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.8/hosts-switch_linux_amd64_v0.0.8.deb), [hosts-switch_linux_amd64_v0.0.8.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.8/hosts-switch_linux_amd64_v0.0.8.zip)
 
-Windows: [hosts-switch_windows_amd64_v0.0.6.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_windows_amd64_v0.0.6.exe), [hosts-switch_windows_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_windows_amd64_v0.0.6.zip)
+Windows: [hosts-switch_windows_amd64_v0.0.8.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.8/hosts-switch_windows_amd64_v0.0.8.exe), [hosts-switch_windows_amd64_v0.0.8.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.8/hosts-switch_windows_amd64_v0.0.8.zip)
 
-MacOs: [hosts-switch_darwin_amd64_v0.0.6.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.6/hosts-switch_darwin_amd64_v0.0.6.zip)
+MacOs: [hosts-switch_darwin_amd64_v0.0.8.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.0.8/hosts-switch_darwin_amd64_v0.0.8.zip)
