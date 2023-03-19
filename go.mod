@@ -1,6 +1,6 @@
 module changeme
 
-go 1.20
+go 1.18
 
 require github.com/wailsapp/wails/v2 v2.4.0
 
