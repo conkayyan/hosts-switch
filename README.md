@@ -4,6 +4,11 @@
 
 This is a simple desktop application developed based on [wails](https://wails.io/), compatible with Linux, Windows and Mac, which can help you better maintain your local hosts configuration.
 
+## Screenshot
+
+![Screenshot1](screenshot1.png "Screenshot1")
+![Screenshot2](screenshot2.png "Screenshot2")
+
 ## Environmental Requirements
 Based on go v1.18+, wails v2.4.0, nodejs v16. 
 
