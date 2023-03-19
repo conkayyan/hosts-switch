@@ -68,7 +68,7 @@ jobs:
       #  run: setx -m PATH '%PATH%;C:\hostedtoolcache\windows\ghaction-upx\3.96\x64\upx-3.96-win64\'
 
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.43
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.4.0
 
       - name: Check Environment
         run: wails doctor

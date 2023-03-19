@@ -8,6 +8,7 @@ go.sum
 
 # Editor directories and files
 .idea
+.github
 .vscode
 *.suo
 *.ntvs*
