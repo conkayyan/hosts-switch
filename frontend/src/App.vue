@@ -29,7 +29,7 @@
           </template>
           <el-sub-menu :index="'show_group:'+groupName" v-for="(group, groupName) in listByGroup.list">
             <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop /></el-col></template>
-            <el-menu-item :index="id" :title="row.ip" v-for="(row, id) in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostnameId(row)" :label="row.hostname" size="large" /></el-menu-item>
+            <el-menu-item :index="'group_'+id" :title="row.ip" v-for="(row, id) in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostnameId(row)" :label="row.hostname" size="large" /></el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
         <el-menu-item index="add_host">
