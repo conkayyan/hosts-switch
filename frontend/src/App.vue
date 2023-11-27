@@ -41,8 +41,10 @@
       </el-menu>
     </el-col>
     <el-col :span="16" class="show-content">
-      <el-form :model="allHostsForm" class="mt-2 ml-2" v-if="activeIndex==='all_hosts'">
-        <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="warning" effect="dark" class="el-col-22 el-col-lg-12" />
+      <el-form :model="allHostsForm" class="mt-2 ml-2 mr-2" v-if="activeIndex==='all_hosts'">
+        <el-form-item>
+          <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="warning" effect="dark" class="el-form-item__content" />
+        </el-form-item>
         <el-form-item class="mt-2">
           <CodeEditor v-model="allHostsForm.allHostsText" />
         </el-form-item>
@@ -110,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-import { DocumentAdd, Document, Menu as IconMenu, Location, Setting } from '@element-plus/icons-vue'
+import { DocumentAdd, Document, Menu as IconMenu } from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
 import {reactive, ref} from "vue";
 import {ElMessage} from 'element-plus'
@@ -269,15 +271,10 @@ const onSubmitAllHosts = () => {
 </script>
 
 <style scoped>
-.el-table .warning-row {
-  --el-table-tr-bg-color: var(--el-color-warning-light-9);
-}
-.el-table .success-row {
-  --el-table-tr-bg-color: var(--el-color-success-light-9);
-}
 .show-content{height: 100vh;}
 .menu-switch{position: absolute; right: 0; padding-right: 50px;}
 .ml-2 {margin-left: 20px;}
+.mr-2 {margin-right: 20px;}
 .mt-2 {margin-top: 20px;}
 .border-right {border-right: 1px solid var(--el-border-color);}
 .no-border-right { border: none; }
