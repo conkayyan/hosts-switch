@@ -207,7 +207,7 @@ func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
 	f.ListByGroup[groupName] = groupInfo
 }
 
-func (f *MyHosts) SwitchByHostnameId(groupName string, hostNameID int, show bool) {
+func (f *MyHosts) SwitchByHostNameId(groupName string, hostNameID int, show bool) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		return
 	}
@@ -226,8 +226,63 @@ func (f *MyHosts) SwitchByHostnameId(groupName string, hostNameID int, show bool
 	f.List[hostNameID].Switch(show)
 }
 
+func (f *MyHosts) SetGroupNameByHostNameId(groupName string, hostNameID int) {
+	if _, ok := f.List[hostNameID]; !ok {
+		return
+	}
+
+	oldGroupName := f.List[hostNameID].GroupName
+	if oldGroupName == groupName {
+		return
+	}
+
+	delete(f.ListByGroup[oldGroupName].List, hostNameID)
+	if len(f.ListByGroup[oldGroupName].List) == 0 {
+		delete(f.ListByGroup, oldGroupName)
+	} else {
+		oldGroupInfo := f.ListByGroup[oldGroupName]
+		oldGroupInfo.Switch(true)
+		for _, row := range oldGroupInfo.List {
+			if !row.Show {
+				oldGroupInfo.Switch(false)
+			}
+		}
+	}
+
+	if _, ok := f.ListByGroup[groupName]; !ok {
+		f.ListByGroup[groupName] = Group{
+			GroupName: groupName,
+			Show:      true,
+			List:      map[int]*Host{},
+		}
+	}
+
+	f.List[hostNameID].SetGroupName(groupName)
+	f.ListByGroup[groupName].List[hostNameID] = f.List[hostNameID]
+
+	groupInfo := f.ListByGroup[groupName]
+	groupInfo.Switch(true)
+	for _, row := range groupInfo.List {
+		if !row.Show {
+			groupInfo.Switch(false)
+		}
+	}
+}
+
+func (f *MyHosts) GetAllGroupNames() []string {
+	var groupNames []string
+	for _, g := range f.ListByGroup {
+		groupNames = append(groupNames, g.GroupName)
+	}
+	return groupNames
+}
+
 func (h *Host) Switch(show bool) {
 	h.Show = show
+}
+
+func (h *Host) SetGroupName(groupName string) {
+	h.GroupName = groupName
 }
 
 func (g *Group) Switch(show bool) {

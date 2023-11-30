@@ -81,6 +81,17 @@ func (a *App) DeleteHost(groupName string, hostNameID int) string {
 	return ""
 }
 
+// SetGroupName .
+func (a *App) SetGroupName(hostNameID int, groupName string) string {
+	a.myHosts.SetGroupNameByHostNameId(groupName, hostNameID)
+	a.myHosts.Pretty()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 // SwitchByGroupName .
 func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	a.myHosts.SwitchByGroupName(groupName, show)
@@ -92,9 +103,14 @@ func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	return ""
 }
 
+// GetAllGroupNames .
+func (a *App) GetAllGroupNames() []string {
+	return a.myHosts.GetAllGroupNames()
+}
+
 // SwitchByHostnameId .
 func (a *App) SwitchByHostnameId(groupName string, hostNameID int, show bool) string {
-	a.myHosts.SwitchByHostnameId(groupName, hostNameID, show)
+	a.myHosts.SwitchByHostNameId(groupName, hostNameID, show)
 	a.myHosts.Pretty()
 
 	if err := a.myHosts.Write(); err != nil {
