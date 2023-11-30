@@ -2,8 +2,8 @@ package hosts
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -55,7 +55,7 @@ func NewMyHosts() *MyHosts {
 }
 
 func (f *MyHosts) Read() error {
-	iot, err := ioutil.ReadFile(f.Path)
+	iot, err := os.ReadFile(f.Path)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (f *MyHosts) Read() error {
 }
 
 func (f *MyHosts) Write() error {
-	return ioutil.WriteFile(f.Path, []byte(f.HostsText), 666)
+	return os.WriteFile(f.Path, []byte(f.HostsText), 666)
 }
 
 func (f *MyHosts) Print() {
