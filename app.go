@@ -1,8 +1,8 @@
 package main
 
 import (
-	"changeme/hosts"
 	"context"
+	"hosts-switch/hosts"
 	"log"
 )
 
