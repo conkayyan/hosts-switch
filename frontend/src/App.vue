@@ -43,13 +43,14 @@
     <el-col :span="16" class="show-content">
       <el-form :model="allHostsForm" class="mt-2 ml-2 mr-2" v-if="activeIndex==='all_hosts'">
         <el-form-item>
-          <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="warning" effect="dark" class="el-form-item__content" />
+          <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info" effect="dark" class="el-form-item__content" />
         </el-form-item>
         <el-form-item class="mt-2">
           <CodeEditor v-model="allHostsForm.allHostsText" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
+          <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
         </el-form-item>
       </el-form>
       <el-form :model="addHostForm" label-width="120px" class="mt-2" v-else-if="activeIndex==='add_host'">
@@ -127,6 +128,7 @@ import {
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App";
+import {ClipboardSetText} from "../wailsjs/runtime";
 
 const groupName = ref('')
 const activeIndex = ref('all_hosts')
@@ -265,6 +267,17 @@ const onSubmitAllHosts = () => {
       getHostsText()
       getListByGroup()
       ElMessage.success('save successfully!')
+    }
+  })
+}
+
+const copyToClipboard = () => {
+  console.log('copy to clipboard!')
+  ClipboardSetText(allHostsForm.allHostsText).then(result => {
+    if (!result){
+      ElMessage.error('copy to clipboard failed!')
+    }else{
+      ElMessage.success('copy to clipboard successfully!')
     }
   })
 }
