@@ -280,8 +280,6 @@ function getHostsText() {
   })
 }
 
-// getHostsText()
-
 function getListByGroup() {
   GetListByGroup().then(result => {
     console.log("listByGroup", result)
@@ -311,8 +309,6 @@ function getAllList() {
   })
 }
 
-getAllList()
-
 function getActiveList() {
   GetList().then(result => {
     console.log("list", result)
@@ -326,13 +322,11 @@ function getActiveList() {
   })
 }
 
-getActiveList()
-
 const handleMenuSelect = (key: string, keyPath: string[]) => {
   console.log('select', key, keyPath)
   if (key === 'allHosts') {
     activeMenuIndex.value = key
-    if (activeTabName.value == "normal") {
+    if (activeTabName.value === "normal") {
       getAllList()
     } else {
       getHostsText()
@@ -437,6 +431,23 @@ const copyToClipboard = () => {
 
 const handleClickTab = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
+  if (activeMenuIndex.value === 'allHosts') {
+    if (tab.props.name === "normal") {
+      getAllList()
+    } else {
+      getHostsText()
+    }
+  } else if (activeMenuIndex.value === 'addHost') {
+
+  } else if (activeMenuIndex.value === 'inUse') {
+    getActiveList()
+  } else if (activeMenuIndex.value === 'showGroup') {
+    let groupInfo = listByGroup.list[groupName.value].list
+    for (let k in groupInfo) {
+      tableData.value.push(groupInfo[k])
+    }
+    console.log(tableData)
+  }
 }
 
 const filterTableData = computed(() =>

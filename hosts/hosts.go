@@ -74,6 +74,7 @@ func (f *MyHosts) Print() {
 
 func (f *MyHosts) Split() {
 	f.ListByGroup = ListByGroup{}
+	f.List = List{}
 	hosts := strings.Split(f.HostsText, "\n")
 	for _, host := range hosts {
 		re := regexp.MustCompile(`^([# ]*)([0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}|[a-zA-Z0-9:]{2,})[ ]+([a-zA-Z0-9. \-]*)+([#]+[ ]*(.*?))?$`)
