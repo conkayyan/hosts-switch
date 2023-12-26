@@ -16,6 +16,8 @@ export function GetList():Promise<hosts.List>;
 
 export function GetListByGroup():Promise<hosts.ListByGroup>;
 
+export function SaveAllGroupHosts(arg1: string, arg2: string): Promise<string>;
+
 export function SaveAllHosts(arg1:string):Promise<string>;
 
 export function SaveAllInUseHosts(arg1: string): Promise<string>;

@@ -19,6 +19,7 @@ type Host struct {
 type List map[int]*Host
 
 type Group struct {
+	HostsText string `json:"hostsText"`
 	GroupName string `json:"groupName"`
 	Show      bool   `json:"show"`
 	List      List   `json:"list"`
@@ -75,6 +76,7 @@ func (f *MyHosts) Print() {
 }
 
 func (f *MyHosts) Split() {
+	f.TotalNum = 0
 	f.ListByGroup = ListByGroup{}
 	f.List = List{}
 	hosts := strings.Split(f.HostsText, "\n")
@@ -107,6 +109,7 @@ func (f *MyHosts) Split() {
 			for _, groupName := range groupNames {
 				if _, ok := f.ListByGroup[groupName]; !ok {
 					f.ListByGroup[groupName] = Group{
+						HostsText: "",
 						GroupName: groupName,
 						Show:      true,
 						List:      map[int]*Host{},
@@ -148,23 +151,72 @@ func (f *MyHosts) Pretty() {
 	f.HostsText = ""
 	f.InUseHostsText = ""
 	f.NoInUseHostsText = ""
-	for _, group := range f.ListByGroup {
+	for i, group := range f.ListByGroup {
+		group.HostsText = ""
 		for _, row := range group.List {
 			if row.Show {
+				group.HostsText += fmt.Sprintf("%s %s\n", row.IP, row.Hostname)
 				f.HostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 				f.InUseHostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 			} else {
+				group.HostsText += fmt.Sprintf("# %s %s\n", row.IP, row.Hostname)
 				f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 				f.NoInUseHostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 			}
 		}
+		f.ListByGroup[i] = group
 	}
+}
+
+func (f *MyHosts) SetGroup(groupName, hostsText string) {
+	f.ListByGroup[groupName] = Group{
+		HostsText: "",
+		GroupName: groupName,
+		Show:      true,
+		List:      map[int]*Host{},
+	}
+	hosts := strings.Split(hostsText, "\n")
+	for _, host := range hosts {
+		re := regexp.MustCompile(`^([# ]*)([0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}|[a-zA-Z0-9:]{2,})[ ]+([a-zA-Z0-9. \-]*)+([#]+[ ]*(.*?))?$`)
+		res := re.FindStringSubmatch(host)
+		if len(res) == 0 {
+			continue
+		}
+		show := !strings.Contains(res[1], "#")
+		for _, hostname := range strings.Split(res[3], " ") {
+			hostname = strings.TrimSpace(hostname)
+			if hostname == "" {
+				continue
+			}
+			if !strings.Contains(res[2], ":") && !strings.Contains(res[2], ".") {
+				continue
+			}
+			f.TotalNum++
+			f.ListByGroup[groupName].List[f.TotalNum] = &Host{
+				ID:        f.TotalNum,
+				Show:      show,
+				IP:        res[2],
+				Hostname:  hostname,
+				GroupName: groupName,
+			}
+		}
+	}
+
+	groupInfo := f.ListByGroup[groupName]
+	groupInfo.Switch(true)
+	for _, row := range groupInfo.List {
+		if !row.Show {
+			groupInfo.Switch(false)
+		}
+	}
+	f.ListByGroup[groupName] = groupInfo
 }
 
 func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 	f.TotalNum++
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
+			HostsText: "",
 			GroupName: groupName,
 			Show:      true,
 			List:      map[int]*Host{},
@@ -182,6 +234,7 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 func (f *MyHosts) Delete(groupName string, hostNameID int) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
+			HostsText: "",
 			GroupName: groupName,
 			Show:      true,
 			List:      map[int]*Host{},
@@ -235,6 +288,7 @@ func (f *MyHosts) SetGroupNameByOldGroupName(oldGroupName, groupName string) {
 
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
+			HostsText: "",
 			GroupName: groupName,
 			Show:      true,
 			List:      map[int]*Host{},

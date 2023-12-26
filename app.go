@@ -79,6 +79,19 @@ func (a *App) SaveAllInUseHosts(hostsText string) string {
 	return ""
 }
 
+// SaveAllGroupHosts .
+func (a *App) SaveAllGroupHosts(groupName, hostsText string) string {
+	a.myHosts.SetGroup(groupName, hostsText)
+	a.myHosts.Pretty()
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 // AddHost .
 func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	a.myHosts.Add(groupName, ip, hostname)

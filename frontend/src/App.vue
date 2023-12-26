@@ -189,27 +189,19 @@
               <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
             </el-form-item>
           </el-form>
-          <el-table v-else-if="activeMenuIndex==='showGroup'"
-                    :key="groupName"
-                    :data="tableData"
-                    stripe
-                    style="width: 100%"
-          >
-            <el-table-column align="center" label="Active" width="80">
-              <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
-              </template>
-            </el-table-column>
-            <el-table-column label="IP" prop="ip" width="150"/>
-            <el-table-column label="Hostname" prop="hostname"/>
-            <el-table-column label="Operations" width="200">
-              <template #default="scope">
-                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
-                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <el-form v-else-if="activeMenuIndex==='showGroup'" :model="allGroupHostsForm">
+            <el-form-item>
+              <el-alert class="el-form-item__content" effect="dark"
+                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
+            </el-form-item>
+            <el-form-item class="mt-2">
+              <CodeEditor v-model="allGroupHostsForm.text"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAllGroupHosts">Save</el-button>
+              <el-button @click="copyToClipboard(allGroupHostsForm)">Copy to Clipboard</el-button>
+            </el-form-item>
+          </el-form>
           <el-form v-else-if="activeMenuIndex==='inUse'" :model="allInUseHostsForm">
             <el-form-item>
               <el-alert class="el-form-item__content" effect="dark"
@@ -243,6 +235,7 @@ import {
   GetInUseHostsText,
   GetList,
   GetListByGroup,
+  SaveAllGroupHosts,
   SaveAllHosts,
   SaveAllInUseHosts,
   SwitchByGroupName,
@@ -256,7 +249,7 @@ const filterGroupName = ref('')
 const activeTabName = ref('normal')
 const groupName = ref('')
 const activeMenuIndex = ref('allHosts')
-const listByGroup = reactive({list: {}})
+const listByGroup = reactive({list: {}, hostsText: ''})
 const addHostForm = reactive({
   groupName: '',
   ip: '',
@@ -266,6 +259,9 @@ const allHostsForm = reactive({
   text: ''
 })
 const allInUseHostsForm = reactive({
+  text: ''
+})
+const allGroupHostsForm = reactive({
   text: ''
 })
 const tableData = ref([])
@@ -293,6 +289,7 @@ function getListByGroup() {
       for (let k in groupInfo) {
         tableData.value.push(groupInfo[k])
       }
+      allGroupHostsForm.text = listByGroup.list[groupName.value].hostsText
       console.log(tableData)
     }
   })
@@ -347,11 +344,7 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
     activeMenuIndex.value = key.substring(0, 9)
     tableData.value.splice(0, tableData.value.length)
     groupName.value = key.substring(10)
-    let groupInfo = listByGroup.list[groupName.value].list
-    for (let k in groupInfo) {
-      tableData.value.push(groupInfo[k])
-    }
-    console.log(tableData)
+    getListByGroup()
   }
 }
 
@@ -437,6 +430,18 @@ const onSubmitAllInUseHosts = () => {
   })
 }
 
+const onSubmitAllGroupHosts = () => {
+  console.log('submit all hosts!')
+  SaveAllGroupHosts(groupName.value, allGroupHostsForm.text).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      getListByGroup()
+      ElMessage.success('save successfully!')
+    }
+  })
+}
+
 const copyToClipboard = (form) => {
   console.log('copy to clipboard!')
   ClipboardSetText(form.text).then(result => {
@@ -465,11 +470,7 @@ const handleClickTab = (tab: TabsPaneContext, event: Event) => {
       getInUseHostsText()
     }
   } else if (activeMenuIndex.value === 'showGroup') {
-    let groupInfo = listByGroup.list[groupName.value].list
-    for (let k in groupInfo) {
-      tableData.value.push(groupInfo[k])
-    }
-    console.log(tableData)
+    getListByGroup()
   }
 }
 
