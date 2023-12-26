@@ -14,11 +14,11 @@
           </el-icon>
           <span>All Hosts</span>
         </el-menu-item>
-        <el-menu-item index="in_effect">
+        <el-menu-item index="in_use">
           <el-icon>
             <el-icon-document-checked/>
           </el-icon>
-          <span>In Effect</span>
+          <span>In Use</span>
         </el-menu-item>
         <el-sub-menu index="host_groups">
           <template #title>
@@ -41,95 +41,176 @@
       </el-menu>
     </el-col>
     <el-col :span="16" class="show-content">
-      <el-form :model="allHostsForm" class="mt-2 ml-2 mr-2" v-if="activeIndex==='all_hosts'">
-        <el-form-item>
-          <el-alert title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info" effect="dark" class="el-form-item__content" />
-        </el-form-item>
-        <el-form-item class="mt-2">
-          <CodeEditor v-model="allHostsForm.allHostsText" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
-          <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
-        </el-form-item>
-      </el-form>
-      <el-form :model="addHostForm" label-width="120px" class="mt-2" v-else-if="activeIndex==='add_host'">
-        <el-form-item label="Group Name">
-          <el-input v-model="addHostForm.groupName" placeholder="Group Name" class="el-col-10"/>
-        </el-form-item>
-        <el-form-item label="IP">
-          <el-input v-model="addHostForm.ip" placeholder="e.g. 127.0.0.1" class="el-col-10"/>
-        </el-form-item>
-        <el-form-item label="Host">
-          <el-input v-model="addHostForm.hostname" placeholder="e.g. www.domain.com" class="el-col-10"/>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
-        </el-form-item>
-      </el-form>
-      <el-table v-else-if="activeIndex==='show_group'"
-                :data="tableData"
-                style="width: 100%"
-                stripe
-                :key="groupName"
-      >
-        <el-table-column label="Active" width="80" align="center">
-          <template #default="scope">
-            <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)" size="large" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="ip" label="IP" width="150" />
-        <el-table-column prop="hostname" label="Hostname" />
-        <el-table-column label="Operations" width="200" >
-          <template #default="scope">
-<!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
-            <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-table v-else-if="activeIndex==='in_effect'"
-                :data="tableData"
-                style="width: 100%"
-                stripe
-                :key="groupName"
-      >
-        <el-table-column label="Active" width="80" align="center">
-          <template #default="scope">
-            <el-checkbox v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)" size="large" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="ip" label="IP" width="150" />
-        <el-table-column prop="hostname" label="Hostname" />
-        <el-table-column prop="group_name" label="Group Name" />
-        <el-table-column label="Operations" width="150" >
-          <template #default="scope">
-<!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
-            <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-tabs v-model="activeName" class="ml-2 mr-2" @tab-click="handleClickTab">
+        <el-tab-pane label="Normal" name="normal">
+          <el-form v-if="activeIndex==='all_hosts'" :model="allHostsForm">
+            <el-form-item>
+              <el-alert class="el-form-item__content" effect="dark"
+                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
+            </el-form-item>
+            <el-form-item class="mt-2">
+              <CodeEditor v-model="allHostsForm.allHostsText"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
+              <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
+            </el-form-item>
+          </el-form>
+          <el-form v-else-if="activeIndex==='add_host'" :model="addHostForm" label-width="120px">
+            <el-form-item label="Group Name">
+              <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
+            </el-form-item>
+            <el-form-item label="IP">
+              <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
+            </el-form-item>
+            <el-form-item label="Host">
+              <el-input v-model="addHostForm.hostname" class="el-col-10" placeholder="e.g. www.domain.com"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
+            </el-form-item>
+          </el-form>
+          <el-table v-else-if="activeIndex==='show_group'"
+                    :key="groupName"
+                    :data="tableData"
+                    stripe
+                    style="width: 100%"
+          >
+            <el-table-column align="center" label="Active" width="80">
+              <template #default="scope">
+                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+              </template>
+            </el-table-column>
+            <el-table-column label="IP" prop="ip" width="150"/>
+            <el-table-column label="Hostname" prop="hostname"/>
+            <el-table-column label="Operations" width="200">
+              <template #default="scope">
+                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-table v-else-if="activeIndex==='in_use'"
+                    :key="groupName"
+                    :data="tableData"
+                    stripe
+                    style="width: 100%"
+          >
+            <el-table-column align="center" label="Active" width="80">
+              <template #default="scope">
+                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+              </template>
+            </el-table-column>
+            <el-table-column label="IP" prop="ip" width="150"/>
+            <el-table-column label="Hostname" prop="hostname"/>
+            <el-table-column label="Group Name" prop="group_name"/>
+            <el-table-column label="Operations" width="150">
+              <template #default="scope">
+                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="Advanced" name="advanced">
+          <el-form v-if="activeIndex==='all_hosts'" :model="allHostsForm">
+            <el-form-item>
+              <el-alert class="el-form-item__content" effect="dark"
+                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
+            </el-form-item>
+            <el-form-item class="mt-2">
+              <CodeEditor v-model="allHostsForm.allHostsText"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
+              <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
+            </el-form-item>
+          </el-form>
+          <el-form v-else-if="activeIndex==='add_host'" :model="addHostForm" label-width="120px">
+            <el-form-item label="Group Name">
+              <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
+            </el-form-item>
+            <el-form-item label="IP">
+              <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
+            </el-form-item>
+            <el-form-item label="Host">
+              <el-input v-model="addHostForm.hostname" class="el-col-10" placeholder="e.g. www.domain.com"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
+            </el-form-item>
+          </el-form>
+          <el-table v-else-if="activeIndex==='show_group'"
+                    :key="groupName"
+                    :data="tableData"
+                    stripe
+                    style="width: 100%"
+          >
+            <el-table-column align="center" label="Active" width="80">
+              <template #default="scope">
+                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+              </template>
+            </el-table-column>
+            <el-table-column label="IP" prop="ip" width="150"/>
+            <el-table-column label="Hostname" prop="hostname"/>
+            <el-table-column label="Operations" width="200">
+              <template #default="scope">
+                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-table v-else-if="activeIndex==='in_use'"
+                    :key="groupName"
+                    :data="tableData"
+                    stripe
+                    style="width: 100%"
+          >
+            <el-table-column align="center" label="Active" width="80">
+              <template #default="scope">
+                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+              </template>
+            </el-table-column>
+            <el-table-column label="IP" prop="ip" width="150"/>
+            <el-table-column label="Hostname" prop="hostname"/>
+            <el-table-column label="Group Name" prop="group_name"/>
+            <el-table-column label="Operations" width="150">
+              <template #default="scope">
+                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
+                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
     </el-col>
   </el-row>
 </template>
 
 <script lang="ts" setup>
-import { DocumentAdd, Document, Menu as IconMenu } from '@element-plus/icons-vue'
+import {Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
-import {reactive, ref} from "vue";
+import {reactive, ref} from "vue"
+import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
 import {
   AddHost,
   DeleteHost,
+  GetHostsText,
   GetList,
   GetListByGroup,
-  GetHostsText,
   SaveAllHosts,
   SwitchByGroupName,
   SwitchByHostnameId
-} from "../wailsjs/go/main/App";
-import {ClipboardSetText} from "../wailsjs/runtime";
+} from "../wailsjs/go/main/App"
+import {ClipboardSetText} from "../wailsjs/runtime"
 
+const activeName = ref('normal')
 const groupName = ref('')
 const activeIndex = ref('all_hosts')
 const listByGroup = reactive({list:{}})
@@ -186,7 +267,7 @@ const handleSelect = (key: string, keyPath: string[]) => {
     activeIndex.value = key
   } else if (key === 'add_host') {
     activeIndex.value = key
-  } else if (key === 'in_effect') {
+  } else if (key === 'in_use') {
     activeIndex.value = key
     groupName.value = key
     getList()
@@ -280,6 +361,10 @@ const copyToClipboard = () => {
       ElMessage.success('copy to clipboard successfully!')
     }
   })
+}
+
+const handleClickTab = (tab: TabsPaneContext, event: Event) => {
+  console.log(tab, event)
 }
 </script>
 
