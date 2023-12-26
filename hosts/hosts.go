@@ -171,13 +171,6 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 		Hostname:  hostname,
 		GroupName: groupName,
 	}
-	f.List[f.TotalNum] = &Host{
-		ID:        f.TotalNum,
-		Show:      true,
-		IP:        ip,
-		Hostname:  hostname,
-		GroupName: groupName,
-	}
 }
 
 func (f *MyHosts) Delete(groupName string, hostNameID int) {
@@ -227,28 +220,12 @@ func (f *MyHosts) SwitchByHostNameId(groupName string, hostNameID int, show bool
 	f.List[hostNameID].Switch(show)
 }
 
-func (f *MyHosts) SetGroupNameByHostNameId(groupName string, hostNameID int) {
-	if _, ok := f.List[hostNameID]; !ok {
+func (f *MyHosts) SetGroupNameByOldGroupName(oldGroupName, groupName string) {
+	if _, ok := f.ListByGroup[oldGroupName]; !ok {
 		return
 	}
-
-	oldGroupName := f.List[hostNameID].GroupName
-	if oldGroupName == groupName {
-		return
-	}
-
-	delete(f.ListByGroup[oldGroupName].List, hostNameID)
-	if len(f.ListByGroup[oldGroupName].List) == 0 {
-		delete(f.ListByGroup, oldGroupName)
-	} else {
-		oldGroupInfo := f.ListByGroup[oldGroupName]
-		oldGroupInfo.Switch(true)
-		for _, row := range oldGroupInfo.List {
-			if !row.Show {
-				oldGroupInfo.Switch(false)
-			}
-		}
-	}
+	oldGroupInfo := f.ListByGroup[oldGroupName]
+	delete(f.ListByGroup, oldGroupName)
 
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
@@ -258,8 +235,15 @@ func (f *MyHosts) SetGroupNameByHostNameId(groupName string, hostNameID int) {
 		}
 	}
 
-	f.List[hostNameID].SetGroupName(groupName)
-	f.ListByGroup[groupName].List[hostNameID] = f.List[hostNameID]
+	for _, row := range oldGroupInfo.List {
+		f.ListByGroup[groupName].List[row.ID] = &Host{
+			ID:        row.ID,
+			Show:      row.Show,
+			IP:        row.IP,
+			Hostname:  row.Hostname,
+			GroupName: groupName,
+		}
+	}
 
 	groupInfo := f.ListByGroup[groupName]
 	groupInfo.Switch(true)
@@ -268,6 +252,7 @@ func (f *MyHosts) SetGroupNameByHostNameId(groupName string, hostNameID int) {
 			groupInfo.Switch(false)
 		}
 	}
+	f.ListByGroup[groupName] = groupInfo
 }
 
 func (f *MyHosts) GetAllGroupNames() []string {
