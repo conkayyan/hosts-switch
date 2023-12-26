@@ -4,9 +4,9 @@
       <el-menu
           class="no-border-right"
           default-active="all_hosts"
-          @select="handleSelect"
-          @open="handleSelect"
-          @close="handleSelect"
+          @close="handleMenuSelect"
+          @open="handleMenuSelect"
+          @select="handleMenuSelect"
       >
         <el-menu-item index="all_hosts">
           <el-icon>
@@ -28,8 +28,15 @@
             <span>Host Groups</span>
           </template>
           <el-sub-menu :index="'show_group:'+groupName" v-for="(group, groupName) in listByGroup.list">
-            <template #title>{{groupName}}<el-col class="menu-switch"><el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop /></el-col></template>
-            <el-menu-item :index="'group_'+id" :title="row.ip" v-for="(row, id) in group.list"><el-checkbox v-model="row.show" @change="handleSwitchByHostnameId(row)" :label="row.hostname" size="large" /></el-menu-item>
+            <template #title>{{ groupName }}
+              <el-col class="menu-switch">
+                <el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop/>
+              </el-col>
+            </template>
+            <el-menu-item v-for="(row, id) in group.list" :index="'group_'+id" :title="row.ip">
+              <el-checkbox v-model="row.show" :label="row.hostname" size="large"
+                           @change="handleSwitchByHostnameId(row)"/>
+            </el-menu-item>
           </el-sub-menu>
         </el-sub-menu>
         <el-menu-item index="add_host">
@@ -41,22 +48,42 @@
       </el-menu>
     </el-col>
     <el-col :span="16" class="show-content">
-      <el-tabs v-model="activeName" class="ml-2 mr-2" @tab-click="handleClickTab">
+      <el-tabs v-model="activeTabName" class="ml-2 mr-2" @tab-click="handleClickTab">
         <el-tab-pane label="Normal" name="normal">
-          <el-form v-if="activeIndex==='all_hosts'" :model="allHostsForm">
-            <el-form-item>
-              <el-alert class="el-form-item__content" effect="dark"
-                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
-            </el-form-item>
-            <el-form-item class="mt-2">
-              <CodeEditor v-model="allHostsForm.allHostsText"/>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
-              <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
-            </el-form-item>
-          </el-form>
-          <el-form v-else-if="activeIndex==='add_host'" :model="addHostForm" label-width="120px">
+          <el-table v-if="activeMenuIndex==='all_hosts'" :key="groupName"
+                    :data="filterTableData"
+                    :model="allHostsForm"
+                    stripe
+                    style="width: 100%"
+          >
+            <el-table-column align="center" label="Active" width="80">
+              <template #default="scope">
+                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="IP" prop="ip" width="150">
+              <template #header>
+                <el-input v-model="filterIP" placeholder="IP" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="Hostname" prop="hostname">
+              <template #header>
+                <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="Group Name" prop="group_name">
+              <template #header>
+                <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column label="Operations" width="150">
+              <template #default="scope">
+                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-form v-else-if="activeMenuIndex==='add_host'" :model="addHostForm" label-width="120px">
             <el-form-item label="Group Name">
               <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
             </el-form-item>
@@ -70,9 +97,9 @@
               <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
             </el-form-item>
           </el-form>
-          <el-table v-else-if="activeIndex==='show_group'"
+          <el-table v-else-if="activeMenuIndex==='show_group'"
                     :key="groupName"
-                    :data="tableData"
+                    :data="filterTableData"
                     stripe
                     style="width: 100%"
           >
@@ -81,8 +108,16 @@
                 <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
-            <el-table-column label="IP" prop="ip" width="150"/>
-            <el-table-column label="Hostname" prop="hostname"/>
+            <el-table-column align="center" label="IP" prop="ip" width="150">
+              <template #header>
+                <el-input v-model="filterIP" placeholder="IP" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="Hostname" prop="hostname">
+              <template #header>
+                <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
+              </template>
+            </el-table-column>
             <el-table-column label="Operations" width="200">
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
@@ -91,9 +126,9 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-table v-else-if="activeIndex==='in_use'"
+          <el-table v-else-if="activeMenuIndex==='in_use'"
                     :key="groupName"
-                    :data="tableData"
+                    :data="filterTableData"
                     stripe
                     style="width: 100%"
           >
@@ -102,9 +137,21 @@
                 <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
-            <el-table-column label="IP" prop="ip" width="150"/>
-            <el-table-column label="Hostname" prop="hostname"/>
-            <el-table-column label="Group Name" prop="group_name"/>
+            <el-table-column align="center" label="IP" prop="ip" width="150">
+              <template #header>
+                <el-input v-model="filterIP" placeholder="IP" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="Hostname" prop="hostname">
+              <template #header>
+                <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" label="Group Name" prop="group_name">
+              <template #header>
+                <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
+              </template>
+            </el-table-column>
             <el-table-column label="Operations" width="150">
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
@@ -115,7 +162,7 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="Advanced" name="advanced">
-          <el-form v-if="activeIndex==='all_hosts'" :model="allHostsForm">
+          <el-form v-if="activeMenuIndex==='all_hosts'" :model="allHostsForm">
             <el-form-item>
               <el-alert class="el-form-item__content" effect="dark"
                         title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
@@ -128,7 +175,7 @@
               <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
             </el-form-item>
           </el-form>
-          <el-form v-else-if="activeIndex==='add_host'" :model="addHostForm" label-width="120px">
+          <el-form v-else-if="activeMenuIndex==='add_host'" :model="addHostForm" label-width="120px">
             <el-form-item label="Group Name">
               <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
             </el-form-item>
@@ -142,7 +189,7 @@
               <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
             </el-form-item>
           </el-form>
-          <el-table v-else-if="activeIndex==='show_group'"
+          <el-table v-else-if="activeMenuIndex==='show_group'"
                     :key="groupName"
                     :data="tableData"
                     stripe
@@ -163,7 +210,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-table v-else-if="activeIndex==='in_use'"
+          <el-table v-else-if="activeMenuIndex==='in_use'"
                     :key="groupName"
                     :data="tableData"
                     stripe
@@ -194,7 +241,7 @@
 <script lang="ts" setup>
 import {Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
-import {reactive, ref} from "vue"
+import {computed, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -210,10 +257,13 @@ import {
 } from "../wailsjs/go/main/App"
 import {ClipboardSetText} from "../wailsjs/runtime"
 
-const activeName = ref('normal')
+const filterIP = ref('')
+const filterHostname = ref('')
+const filterGroupName = ref('')
+const activeTabName = ref('normal')
 const groupName = ref('')
-const activeIndex = ref('all_hosts')
-const listByGroup = reactive({list:{}})
+const activeMenuIndex = ref('all_hosts')
+const listByGroup = reactive({list: {}})
 const addHostForm = reactive({
   groupName: '',
   ip: '',
@@ -229,54 +279,76 @@ function getHostsText() {
     allHostsForm.allHostsText = result
   })
 }
-getHostsText()
+
+// getHostsText()
 
 function getListByGroup() {
   GetListByGroup().then(result => {
     console.log("listByGroup", result)
     listByGroup.list = result
 
-    if (groupName.value !== "" && activeIndex.value === "show_group") {
+    if (groupName.value !== "" && activeMenuIndex.value === "show_group") {
       tableData.value.splice(0, tableData.value.length)
       let groupInfo = listByGroup.list[groupName.value].list
-      for (let k in groupInfo){
+      for (let k in groupInfo) {
         tableData.value.push(groupInfo[k])
       }
       console.log(tableData)
     }
   })
 }
+
 getListByGroup()
 
-function getList() {
+function getAllList() {
   GetList().then(result => {
     console.log("list", result)
 
     tableData.value.splice(0, tableData.value.length)
-    for (let k in result){
-      if (result[k].show){
+    for (let k in result) {
+      tableData.value.push(result[k])
+    }
+  })
+}
+
+getAllList()
+
+function getActiveList() {
+  GetList().then(result => {
+    console.log("list", result)
+
+    tableData.value.splice(0, tableData.value.length)
+    for (let k in result) {
+      if (result[k].show) {
         tableData.value.push(result[k])
       }
     }
   })
 }
 
-const handleSelect = (key: string, keyPath: string[]) => {
+getActiveList()
+
+const handleMenuSelect = (key: string, keyPath: string[]) => {
   console.log('select', key, keyPath)
   if (key === 'all_hosts') {
-    activeIndex.value = key
+    activeMenuIndex.value = key
+    if (activeTabName.value == "normal") {
+      getAllList()
+    } else {
+      getHostsText()
+    }
   } else if (key === 'add_host') {
-    activeIndex.value = key
+    activeMenuIndex.value = key
   } else if (key === 'in_use') {
-    activeIndex.value = key
+    activeMenuIndex.value = key
     groupName.value = key
-    getList()
+    getActiveList()
   } else if (key.substring(0, 10) === 'show_group') {
-    activeIndex.value = key.substring(0, 10)
+    activeMenuIndex.value = key.substring(0, 10)
     tableData.value.splice(0, tableData.value.length)
     groupName.value = key.substring(11)
     let groupInfo = listByGroup.list[groupName.value].list
-    for (let k in groupInfo){
+    for (let k in groupInfo) {
       tableData.value.push(groupInfo[k])
     }
     console.log(tableData)
@@ -286,9 +358,9 @@ const handleSelect = (key: string, keyPath: string[]) => {
 const handleSwitchByGroupName = (group) => {
   console.log('switch', group.group_name, group.show)
   SwitchByGroupName(group.group_name, group.show).then(result => {
-    if (result!==''){
+    if (result !== '') {
       ElMessage.error('switch failed!' + result)
-    }else{
+    } else {
       getHostsText()
       getListByGroup()
       ElMessage.success('switch successfully!')
@@ -299,9 +371,9 @@ const handleSwitchByGroupName = (group) => {
 const handleSwitchByHostnameId = (row) => {
   console.log('switch', row.group_name, row.id, row.hostname, row.show)
   SwitchByHostnameId(row.group_name, row.id, row.show).then(result => {
-    if (result!==''){
+    if (result !== '') {
       ElMessage.error('switch failed!' + result)
-    }else{
+    } else {
       getHostsText()
       getListByGroup()
       ElMessage.success('switch successfully!')
@@ -312,9 +384,9 @@ const handleSwitchByHostnameId = (row) => {
 const handleDeleteHost = (index, row) => {
   console.log('delete', index, row.group_name, row.hostname, row.id)
   DeleteHost(row.group_name, row.id).then(result => {
-    if (result!==''){
+    if (result !== '') {
       ElMessage.error('delete failed!' + result)
-    }else{
+    } else {
       tableData.value.splice(index, 1)
       getHostsText()
       getListByGroup()
@@ -326,9 +398,9 @@ const handleDeleteHost = (index, row) => {
 const onSubmitAddHost = () => {
   console.log('submit add host!')
   AddHost(addHostForm.groupName, addHostForm.ip, addHostForm.hostname).then(result => {
-    if (result!==''){
+    if (result !== '') {
       ElMessage.error('save failed!' + result)
-    }else{
+    } else {
       addHostForm.groupName = ''
       addHostForm.ip = ''
       addHostForm.hostname = ''
@@ -342,9 +414,9 @@ const onSubmitAddHost = () => {
 const onSubmitAllHosts = () => {
   console.log('submit all hosts!')
   SaveAllHosts(allHostsForm.allHostsText).then(result => {
-    if (result!==''){
+    if (result !== '') {
       ElMessage.error('save failed!' + result)
-    }else{
+    } else {
       getHostsText()
       getListByGroup()
       ElMessage.success('save successfully!')
@@ -355,9 +427,9 @@ const onSubmitAllHosts = () => {
 const copyToClipboard = () => {
   console.log('copy to clipboard!')
   ClipboardSetText(allHostsForm.allHostsText).then(result => {
-    if (!result){
+    if (!result) {
       ElMessage.error('copy to clipboard failed!')
-    }else{
+    } else {
       ElMessage.success('copy to clipboard successfully!')
     }
   })
@@ -366,14 +438,44 @@ const copyToClipboard = () => {
 const handleClickTab = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event)
 }
+
+const filterTableData = computed(() =>
+    tableData.value.filter(
+        (data) => (!filterIP.value || data.ip.toLowerCase().includes(filterIP.value.toLowerCase()))
+            && (!filterHostname.value || data.hostname.toLowerCase().includes(filterHostname.value.toLowerCase()))
+            && (!filterGroupName.value || data.group_name.toLowerCase().includes(filterGroupName.value.toLowerCase()))
+    )
+)
 </script>
 
 <style scoped>
-.show-content{height: 100vh;}
-.menu-switch{position: absolute; right: 0; padding-right: 50px;}
-.ml-2 {margin-left: 20px;}
-.mr-2 {margin-right: 20px;}
-.mt-2 {margin-top: 20px;}
-.border-right {border-right: 1px solid var(--el-border-color);}
-.no-border-right { border: none; }
+.show-content {
+  height: 100vh;
+}
+
+.menu-switch {
+  position: absolute;
+  right: 0;
+  padding-right: 50px;
+}
+
+.ml-2 {
+  margin-left: 20px;
+}
+
+.mr-2 {
+  margin-right: 20px;
+}
+
+.mt-2 {
+  margin-top: 20px;
+}
+
+.border-right {
+  border-right: 1px solid var(--el-border-color);
+}
+
+.no-border-right {
+  border: none;
+}
 </style>
