@@ -168,11 +168,11 @@
                         title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
             </el-form-item>
             <el-form-item class="mt-2">
-              <CodeEditor v-model="allHostsForm.allHostsText"/>
+              <CodeEditor v-model="allHostsForm.text"/>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="onSubmitAllHosts">Save</el-button>
-              <el-button @click="copyToClipboard">Copy to Clipboard</el-button>
+              <el-button @click="copyToClipboard(allHostsForm)">Copy to Clipboard</el-button>
             </el-form-item>
           </el-form>
           <el-form v-else-if="activeMenuIndex==='addHost'" :model="addHostForm" label-width="120px">
@@ -210,28 +210,19 @@
               </template>
             </el-table-column>
           </el-table>
-          <el-table v-else-if="activeMenuIndex==='inUse'"
-                    :key="groupName"
-                    :data="tableData"
-                    stripe
-                    style="width: 100%"
-          >
-            <el-table-column align="center" label="Active" width="80">
-              <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
-              </template>
-            </el-table-column>
-            <el-table-column label="IP" prop="ip" width="150"/>
-            <el-table-column label="Hostname" prop="hostname"/>
-            <el-table-column label="Group Name" prop="groupName"/>
-            <el-table-column label="Operations" width="150">
-              <template #default="scope">
-                <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
-                <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <el-form v-else-if="activeMenuIndex==='inUse'" :model="allInUseHostsForm">
+            <el-form-item>
+              <el-alert class="el-form-item__content" effect="dark"
+                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
+            </el-form-item>
+            <el-form-item class="mt-2">
+              <CodeEditor v-model="allInUseHostsForm.text"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="onSubmitAllInUseHosts">Save</el-button>
+              <el-button @click="copyToClipboard(allInUseHostsForm)">Copy to Clipboard</el-button>
+            </el-form-item>
+          </el-form>
         </el-tab-pane>
       </el-tabs>
     </el-col>
@@ -249,9 +240,11 @@ import {
   AddHost,
   DeleteHost,
   GetHostsText,
+  GetInUseHostsText,
   GetList,
   GetListByGroup,
   SaveAllHosts,
+  SaveAllInUseHosts,
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App"
@@ -270,13 +263,22 @@ const addHostForm = reactive({
   hostname: '',
 })
 const allHostsForm = reactive({
-  allHostsText: ''
+  text: ''
+})
+const allInUseHostsForm = reactive({
+  text: ''
 })
 const tableData = ref([])
 
 function getHostsText() {
   GetHostsText().then(result => {
-    allHostsForm.allHostsText = result
+    allHostsForm.text = result
+  })
+}
+
+function getInUseHostsText() {
+  GetInUseHostsText().then(result => {
+    allInUseHostsForm.text = result
   })
 }
 
@@ -336,7 +338,11 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
   } else if (key === 'inUse') {
     activeMenuIndex.value = key
     groupName.value = key
-    getActiveList()
+    if (activeTabName.value === "normal") {
+      getActiveList()
+    } else {
+      getInUseHostsText()
+    }
   } else if (key.substring(0, 9) === 'showGroup') {
     activeMenuIndex.value = key.substring(0, 9)
     tableData.value.splice(0, tableData.value.length)
@@ -407,7 +413,7 @@ const onSubmitAddHost = () => {
 
 const onSubmitAllHosts = () => {
   console.log('submit all hosts!')
-  SaveAllHosts(allHostsForm.allHostsText).then(result => {
+  SaveAllHosts(allHostsForm.text).then(result => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
@@ -418,9 +424,22 @@ const onSubmitAllHosts = () => {
   })
 }
 
-const copyToClipboard = () => {
+const onSubmitAllInUseHosts = () => {
+  console.log('submit all hosts!')
+  SaveAllInUseHosts(allInUseHostsForm.text).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      getInUseHostsText()
+      getListByGroup()
+      ElMessage.success('save successfully!')
+    }
+  })
+}
+
+const copyToClipboard = (form) => {
   console.log('copy to clipboard!')
-  ClipboardSetText(allHostsForm.allHostsText).then(result => {
+  ClipboardSetText(form.text).then(result => {
     if (!result) {
       ElMessage.error('copy to clipboard failed!')
     } else {
@@ -440,7 +459,11 @@ const handleClickTab = (tab: TabsPaneContext, event: Event) => {
   } else if (activeMenuIndex.value === 'addHost') {
 
   } else if (activeMenuIndex.value === 'inUse') {
-    getActiveList()
+    if (tab.props.name === "normal") {
+      getActiveList()
+    } else {
+      getInUseHostsText()
+    }
   } else if (activeMenuIndex.value === 'showGroup') {
     let groupInfo = listByGroup.list[groupName.value].list
     for (let k in groupInfo) {

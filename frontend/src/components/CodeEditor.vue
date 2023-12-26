@@ -3,7 +3,7 @@
       v-model="code"
       placeholder="# e.g.
 127.0.0.1 localhost"
-      :style="{ height: '600px', width: '100%' }"
+      :style="{ height: '560px', width: '100%' }"
       :autofocus="true"
       :indent-with-tab="true"
       :tab-size="2"
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-import { Codemirror } from 'vue-codemirror'
-import { javascript } from '@codemirror/lang-javascript'
-import { oneDark } from '@codemirror/theme-one-dark'
+import {ref} from 'vue'
+import {Codemirror} from 'vue-codemirror'
+import {javascript} from '@codemirror/lang-javascript'
+import {oneDark} from '@codemirror/theme-one-dark'
 
 export default {
   components: {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"hosts-switch/hosts"
 	"log"
 )
@@ -47,11 +48,30 @@ func (a *App) GetHostsText() string {
 	return a.myHosts.HostsText
 }
 
+// GetInUseHostsText .
+func (a *App) GetInUseHostsText() string {
+	return a.myHosts.InUseHostsText
+}
+
 // SaveAllHosts .
 func (a *App) SaveAllHosts(hostsText string) string {
 	a.myHosts.HostsText = hostsText
 	a.myHosts.Split()
 	a.myHosts.Pretty()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// SaveAllInUseHosts .
+func (a *App) SaveAllInUseHosts(hostsText string) string {
+	a.myHosts.HostsText = a.myHosts.NoInUseHostsText + "\n" + hostsText
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	fmt.Println(a.myHosts.HostsText)
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()

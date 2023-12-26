@@ -18,6 +18,10 @@ export function GetHostsText() {
   return window['go']['main']['App']['GetHostsText']();
 }
 
+export function GetInUseHostsText() {
+  return window['go']['main']['App']['GetInUseHostsText']();
+}
+
 export function GetList() {
   return window['go']['main']['App']['GetList']();
 }
@@ -28,6 +32,10 @@ export function GetListByGroup() {
 
 export function SaveAllHosts(arg1) {
   return window['go']['main']['App']['SaveAllHosts'](arg1);
+}
+
+export function SaveAllInUseHosts(arg1) {
+  return window['go']['main']['App']['SaveAllInUseHosts'](arg1);
 }
 
 export function SetGroupName(arg1, arg2) {

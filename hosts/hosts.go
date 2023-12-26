@@ -27,11 +27,13 @@ type Group struct {
 type ListByGroup map[string]Group
 
 type MyHosts struct {
-	Path        string      `json:"path"`
-	HostsText   string      `json:"hosts_text"`
-	TotalNum    int         `json:"total_num"`
-	List        List        `json:"list"`
-	ListByGroup ListByGroup `json:"list_by_group"`
+	Path             string      `json:"path"`
+	HostsText        string      `json:"hosts_text"`
+	InUseHostsText   string      `json:"in_use_hosts_text"`
+	NoInUseHostsText string      `json:"no_in_use_hosts_text"`
+	TotalNum         int         `json:"total_num"`
+	List             List        `json:"list"`
+	ListByGroup      ListByGroup `json:"list_by_group"`
 }
 
 type M map[string]string
@@ -144,12 +146,16 @@ func (f *MyHosts) Split() {
 
 func (f *MyHosts) Pretty() {
 	f.HostsText = ""
+	f.InUseHostsText = ""
+	f.NoInUseHostsText = ""
 	for _, group := range f.ListByGroup {
 		for _, row := range group.List {
 			if row.Show {
 				f.HostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
+				f.InUseHostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 			} else {
 				f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
+				f.NoInUseHostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 			}
 		}
 	}

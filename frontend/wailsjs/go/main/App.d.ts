@@ -10,11 +10,15 @@ export function GetAllGroupNames():Promise<Array<string>>;
 
 export function GetHostsText():Promise<string>;
 
+export function GetInUseHostsText(): Promise<string>;
+
 export function GetList():Promise<hosts.List>;
 
 export function GetListByGroup():Promise<hosts.ListByGroup>;
 
 export function SaveAllHosts(arg1:string):Promise<string>;
+
+export function SaveAllInUseHosts(arg1: string): Promise<string>;
 
 export function SetGroupName(arg1: string, arg2: string): Promise<string>;
 
