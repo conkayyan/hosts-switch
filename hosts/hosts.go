@@ -13,13 +13,13 @@ type Host struct {
 	Show      bool   `json:"show"`
 	IP        string `json:"ip"`
 	Hostname  string `json:"hostname"`
-	GroupName string `json:"group_name"`
+	GroupName string `json:"groupName"`
 }
 
 type List map[int]*Host
 
 type Group struct {
-	GroupName string `json:"group_name"`
+	GroupName string `json:"groupName"`
 	Show      bool   `json:"show"`
 	List      List   `json:"list"`
 }
