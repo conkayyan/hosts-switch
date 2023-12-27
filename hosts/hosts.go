@@ -2,8 +2,8 @@ package hosts
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -13,13 +13,14 @@ type Host struct {
 	Show      bool   `json:"show"`
 	IP        string `json:"ip"`
 	Hostname  string `json:"hostname"`
-	GroupName string `json:"group_name"`
+	GroupName string `json:"groupName"`
 }
 
 type List map[int]*Host
 
 type Group struct {
-	GroupName string `json:"group_name"`
+	HostsText string `json:"hostsText"`
+	GroupName string `json:"groupName"`
 	Show      bool   `json:"show"`
 	List      List   `json:"list"`
 }
@@ -27,11 +28,13 @@ type Group struct {
 type ListByGroup map[string]Group
 
 type MyHosts struct {
-	Path        string      `json:"path"`
-	HostsText   string      `json:"hosts_text"`
-	TotalNum    int         `json:"total_num"`
-	List        List        `json:"list"`
-	ListByGroup ListByGroup `json:"list_by_group"`
+	Path             string      `json:"path"`
+	HostsText        string      `json:"hosts_text"`
+	InUseHostsText   string      `json:"in_use_hosts_text"`
+	NoInUseHostsText string      `json:"no_in_use_hosts_text"`
+	TotalNum         int         `json:"total_num"`
+	List             List        `json:"list"`
+	ListByGroup      ListByGroup `json:"list_by_group"`
 }
 
 type M map[string]string
@@ -55,7 +58,7 @@ func NewMyHosts() *MyHosts {
 }
 
 func (f *MyHosts) Read() error {
-	iot, err := ioutil.ReadFile(f.Path)
+	iot, err := os.ReadFile(f.Path)
 	if err != nil {
 		return err
 	}
@@ -65,7 +68,7 @@ func (f *MyHosts) Read() error {
 }
 
 func (f *MyHosts) Write() error {
-	return ioutil.WriteFile(f.Path, []byte(f.HostsText), 666)
+	return os.WriteFile(f.Path, []byte(f.HostsText), 666)
 }
 
 func (f *MyHosts) Print() {
@@ -73,7 +76,9 @@ func (f *MyHosts) Print() {
 }
 
 func (f *MyHosts) Split() {
+	f.TotalNum = 0
 	f.ListByGroup = ListByGroup{}
+	f.List = List{}
 	hosts := strings.Split(f.HostsText, "\n")
 	for _, host := range hosts {
 		re := regexp.MustCompile(`^([# ]*)([0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}|[a-zA-Z0-9:]{2,})[ ]+([a-zA-Z0-9. \-]*)+([#]+[ ]*(.*?))?$`)
@@ -104,6 +109,7 @@ func (f *MyHosts) Split() {
 			for _, groupName := range groupNames {
 				if _, ok := f.ListByGroup[groupName]; !ok {
 					f.ListByGroup[groupName] = Group{
+						HostsText: "",
 						GroupName: groupName,
 						Show:      true,
 						List:      map[int]*Host{},
@@ -143,21 +149,74 @@ func (f *MyHosts) Split() {
 
 func (f *MyHosts) Pretty() {
 	f.HostsText = ""
-	for _, group := range f.ListByGroup {
+	f.InUseHostsText = ""
+	f.NoInUseHostsText = ""
+	for i, group := range f.ListByGroup {
+		group.HostsText = ""
 		for _, row := range group.List {
 			if row.Show {
+				group.HostsText += fmt.Sprintf("%s %s\n", row.IP, row.Hostname)
 				f.HostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
+				f.InUseHostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, group.GroupName)
 			} else {
+				group.HostsText += fmt.Sprintf("# %s %s\n", row.IP, row.Hostname)
 				f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
+				f.NoInUseHostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, group.GroupName)
+			}
+		}
+		f.ListByGroup[i] = group
+	}
+}
+
+func (f *MyHosts) SetGroup(groupName, hostsText string) {
+	f.ListByGroup[groupName] = Group{
+		HostsText: "",
+		GroupName: groupName,
+		Show:      true,
+		List:      map[int]*Host{},
+	}
+	hosts := strings.Split(hostsText, "\n")
+	for _, host := range hosts {
+		re := regexp.MustCompile(`^([# ]*)([0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}\.[0-9]{0,3}|[a-zA-Z0-9:]{2,})[ ]+([a-zA-Z0-9. \-]*)+([#]+[ ]*(.*?))?$`)
+		res := re.FindStringSubmatch(host)
+		if len(res) == 0 {
+			continue
+		}
+		show := !strings.Contains(res[1], "#")
+		for _, hostname := range strings.Split(res[3], " ") {
+			hostname = strings.TrimSpace(hostname)
+			if hostname == "" {
+				continue
+			}
+			if !strings.Contains(res[2], ":") && !strings.Contains(res[2], ".") {
+				continue
+			}
+			f.TotalNum++
+			f.ListByGroup[groupName].List[f.TotalNum] = &Host{
+				ID:        f.TotalNum,
+				Show:      show,
+				IP:        res[2],
+				Hostname:  hostname,
+				GroupName: groupName,
 			}
 		}
 	}
+
+	groupInfo := f.ListByGroup[groupName]
+	groupInfo.Switch(true)
+	for _, row := range groupInfo.List {
+		if !row.Show {
+			groupInfo.Switch(false)
+		}
+	}
+	f.ListByGroup[groupName] = groupInfo
 }
 
 func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 	f.TotalNum++
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
+			HostsText: "",
 			GroupName: groupName,
 			Show:      true,
 			List:      map[int]*Host{},
@@ -170,18 +229,12 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 		Hostname:  hostname,
 		GroupName: groupName,
 	}
-	f.List[f.TotalNum] = &Host{
-		ID:        f.TotalNum,
-		Show:      true,
-		IP:        ip,
-		Hostname:  hostname,
-		GroupName: groupName,
-	}
 }
 
 func (f *MyHosts) Delete(groupName string, hostNameID int) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
+			HostsText: "",
 			GroupName: groupName,
 			Show:      true,
 			List:      map[int]*Host{},
@@ -207,7 +260,7 @@ func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
 	f.ListByGroup[groupName] = groupInfo
 }
 
-func (f *MyHosts) SwitchByHostnameId(groupName string, hostNameID int, show bool) {
+func (f *MyHosts) SwitchByHostNameId(groupName string, hostNameID int, show bool) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		return
 	}
@@ -226,8 +279,56 @@ func (f *MyHosts) SwitchByHostnameId(groupName string, hostNameID int, show bool
 	f.List[hostNameID].Switch(show)
 }
 
+func (f *MyHosts) SetGroupNameByOldGroupName(oldGroupName, groupName string) {
+	if _, ok := f.ListByGroup[oldGroupName]; !ok {
+		return
+	}
+	oldGroupInfo := f.ListByGroup[oldGroupName]
+	delete(f.ListByGroup, oldGroupName)
+
+	if _, ok := f.ListByGroup[groupName]; !ok {
+		f.ListByGroup[groupName] = Group{
+			HostsText: "",
+			GroupName: groupName,
+			Show:      true,
+			List:      map[int]*Host{},
+		}
+	}
+
+	for _, row := range oldGroupInfo.List {
+		f.ListByGroup[groupName].List[row.ID] = &Host{
+			ID:        row.ID,
+			Show:      row.Show,
+			IP:        row.IP,
+			Hostname:  row.Hostname,
+			GroupName: groupName,
+		}
+	}
+
+	groupInfo := f.ListByGroup[groupName]
+	groupInfo.Switch(true)
+	for _, row := range groupInfo.List {
+		if !row.Show {
+			groupInfo.Switch(false)
+		}
+	}
+	f.ListByGroup[groupName] = groupInfo
+}
+
+func (f *MyHosts) GetAllGroupNames() []string {
+	var groupNames []string
+	for _, g := range f.ListByGroup {
+		groupNames = append(groupNames, g.GroupName)
+	}
+	return groupNames
+}
+
 func (h *Host) Switch(show bool) {
 	h.Show = show
+}
+
+func (h *Host) SetGroupName(groupName string) {
+	h.GroupName = groupName
 }
 
 func (g *Group) Switch(show bool) {

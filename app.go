@@ -1,8 +1,9 @@
 package main
 
 import (
-	"changeme/hosts"
 	"context"
+	"fmt"
+	"hosts-switch/hosts"
 	"log"
 )
 
@@ -32,72 +33,141 @@ func (a *App) startup(ctx context.Context) {
 	a.myHosts.Print()
 }
 
-// GetList
+// GetList .
 func (a *App) GetList() hosts.List {
 	return a.myHosts.List
 }
 
-// GetListByGroup
+// GetListByGroup .
 func (a *App) GetListByGroup() hosts.ListByGroup {
 	return a.myHosts.ListByGroup
 }
 
-// GetHostsText
+// GetHostsText .
 func (a *App) GetHostsText() string {
 	return a.myHosts.HostsText
 }
 
-// SaveAllHosts
+// GetInUseHostsText .
+func (a *App) GetInUseHostsText() string {
+	return a.myHosts.InUseHostsText
+}
+
+// SaveAllHosts .
 func (a *App) SaveAllHosts(hostsText string) string {
 	a.myHosts.HostsText = hostsText
 	a.myHosts.Split()
 	a.myHosts.Pretty()
-	err := a.myHosts.Write()
-	if err != nil {
+
+	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
 	}
 	return ""
 }
 
-// AddHost
+// SaveAllInUseHosts .
+func (a *App) SaveAllInUseHosts(hostsText string) string {
+	a.myHosts.HostsText = a.myHosts.NoInUseHostsText + "\n" + hostsText
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	fmt.Println(a.myHosts.HostsText)
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// SaveAllGroupHosts .
+func (a *App) SaveAllGroupHosts(groupName, hostsText string) string {
+	a.myHosts.SetGroup(groupName, hostsText)
+	a.myHosts.Pretty()
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// AddHost .
 func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	a.myHosts.Add(groupName, ip, hostname)
 	a.myHosts.Pretty()
-	err := a.myHosts.Write()
-	if err != nil {
+	a.myHosts.Split()
+
+	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
 	}
 	return ""
 }
 
-// DeleteHost
+// SaveAddHostsText .
+func (a *App) SaveAddHostsText(hostsText string) string {
+	a.myHosts.HostsText = a.myHosts.HostsText + "\n" + hostsText
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	fmt.Println(a.myHosts.HostsText)
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// DeleteHost .
 func (a *App) DeleteHost(groupName string, hostNameID int) string {
 	a.myHosts.Delete(groupName, hostNameID)
 	a.myHosts.Pretty()
-	err := a.myHosts.Write()
-	if err != nil {
+	a.myHosts.Split()
+
+	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
 	}
 	return ""
 }
 
-// SwitchByGroupName
+// SetGroupName .
+func (a *App) SetGroupName(oldGroupName, groupName string) string {
+	if oldGroupName == groupName {
+		return ""
+	}
+	a.myHosts.SetGroupNameByOldGroupName(oldGroupName, groupName)
+	a.myHosts.Pretty()
+	a.myHosts.Split()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// SwitchByGroupName .
 func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	a.myHosts.SwitchByGroupName(groupName, show)
 	a.myHosts.Pretty()
-	err := a.myHosts.Write()
-	if err != nil {
+	a.myHosts.Split()
+
+	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
 	}
 	return ""
 }
 
-// SwitchByHostnameId
+// GetAllGroupNames .
+func (a *App) GetAllGroupNames() []string {
+	return a.myHosts.GetAllGroupNames()
+}
+
+// SwitchByHostnameId .
 func (a *App) SwitchByHostnameId(groupName string, hostNameID int, show bool) string {
-	a.myHosts.SwitchByHostnameId(groupName, hostNameID, show)
+	a.myHosts.SwitchByHostNameId(groupName, hostNameID, show)
 	a.myHosts.Pretty()
-	err := a.myHosts.Write()
-	if err != nil {
+
+	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
 	}
 	return ""

@@ -10,8 +10,16 @@ export function DeleteHost(arg1, arg2) {
   return window['go']['main']['App']['DeleteHost'](arg1, arg2);
 }
 
+export function GetAllGroupNames() {
+  return window['go']['main']['App']['GetAllGroupNames']();
+}
+
 export function GetHostsText() {
   return window['go']['main']['App']['GetHostsText']();
+}
+
+export function GetInUseHostsText() {
+  return window['go']['main']['App']['GetInUseHostsText']();
 }
 
 export function GetList() {
@@ -22,8 +30,24 @@ export function GetListByGroup() {
   return window['go']['main']['App']['GetListByGroup']();
 }
 
+export function SaveAddHostsText(arg1) {
+    return window['go']['main']['App']['SaveAddHostsText'](arg1);
+}
+
+export function SaveAllGroupHosts(arg1, arg2) {
+  return window['go']['main']['App']['SaveAllGroupHosts'](arg1, arg2);
+}
+
 export function SaveAllHosts(arg1) {
   return window['go']['main']['App']['SaveAllHosts'](arg1);
+}
+
+export function SaveAllInUseHosts(arg1) {
+  return window['go']['main']['App']['SaveAllInUseHosts'](arg1);
+}
+
+export function SetGroupName(arg1, arg2) {
+  return window['go']['main']['App']['SetGroupName'](arg1, arg2);
 }
 
 export function SwitchByGroupName(arg1, arg2) {
