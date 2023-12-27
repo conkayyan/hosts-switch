@@ -30,6 +30,10 @@ export function GetListByGroup() {
   return window['go']['main']['App']['GetListByGroup']();
 }
 
+export function SaveAddHostsText(arg1) {
+    return window['go']['main']['App']['SaveAddHostsText'](arg1);
+}
+
 export function SaveAllGroupHosts(arg1, arg2) {
   return window['go']['main']['App']['SaveAllGroupHosts'](arg1, arg2);
 }

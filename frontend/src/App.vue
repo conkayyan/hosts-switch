@@ -175,18 +175,16 @@
               <el-button @click="copyToClipboard(allHostsForm)">Copy to Clipboard</el-button>
             </el-form-item>
           </el-form>
-          <el-form v-else-if="activeMenuIndex==='addHost'" :model="addHostForm" label-width="120px">
-            <el-form-item label="Group Name">
-              <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
+          <el-form v-else-if="activeMenuIndex==='addHost'" :model="addHostsTextForm">
+            <el-form-item>
+              <el-alert class="el-form-item__content" effect="dark"
+                        title="e.g. 127.0.0.1 www.domain.com # Group Name One # Group Name Two" type="info"/>
             </el-form-item>
-            <el-form-item label="IP">
-              <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
-            </el-form-item>
-            <el-form-item label="Host">
-              <el-input v-model="addHostForm.hostname" class="el-col-10" placeholder="e.g. www.domain.com"/>
+            <el-form-item class="mt-2">
+              <CodeEditor v-model="addHostsTextForm.text"/>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
+              <el-button type="primary" @click="onSubmitAddHostsTextForm">Save</el-button>
             </el-form-item>
           </el-form>
           <el-form v-else-if="activeMenuIndex==='showGroup'" :model="allGroupHostsForm">
@@ -235,6 +233,7 @@ import {
   GetInUseHostsText,
   GetList,
   GetListByGroup,
+  SaveAddHostsText,
   SaveAllGroupHosts,
   SaveAllHosts,
   SaveAllInUseHosts,
@@ -254,6 +253,9 @@ const addHostForm = reactive({
   groupName: '',
   ip: '',
   hostname: '',
+})
+const addHostsTextForm = reactive({
+  text: ''
 })
 const allHostsForm = reactive({
   text: ''
@@ -418,7 +420,7 @@ const onSubmitAllHosts = () => {
 }
 
 const onSubmitAllInUseHosts = () => {
-  console.log('submit all hosts!')
+  console.log('submit all in use hosts!')
   SaveAllInUseHosts(allInUseHostsForm.text).then(result => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
@@ -431,12 +433,25 @@ const onSubmitAllInUseHosts = () => {
 }
 
 const onSubmitAllGroupHosts = () => {
-  console.log('submit all hosts!')
+  console.log('submit all group hosts!')
   SaveAllGroupHosts(groupName.value, allGroupHostsForm.text).then(result => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
       getListByGroup()
+      ElMessage.success('save successfully!')
+    }
+  })
+}
+
+const onSubmitAddHostsTextForm = () => {
+  console.log('submit add host text!')
+  SaveAddHostsText(addHostsTextForm.text).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      getListByGroup()
+      addHostsTextForm.text = ""
       ElMessage.success('save successfully!')
     }
   })

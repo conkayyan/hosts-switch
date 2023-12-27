@@ -104,6 +104,20 @@ func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	return ""
 }
 
+// SaveAddHostsText .
+func (a *App) SaveAddHostsText(hostsText string) string {
+	a.myHosts.HostsText = a.myHosts.HostsText + "\n" + hostsText
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	fmt.Println(a.myHosts.HostsText)
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 // DeleteHost .
 func (a *App) DeleteHost(groupName string, hostNameID int) string {
 	a.myHosts.Delete(groupName, hostNameID)
