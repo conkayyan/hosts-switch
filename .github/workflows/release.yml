@@ -41,6 +41,8 @@ jobs:
       - name: Install Vue Dependencies
         run: |
           cd frontend
+          rm -rf dist
+          rm -rf node_modules
           npm install
 
       - name: Set up Go
