@@ -27,17 +27,13 @@
             </el-icon>
             <span>Host Groups</span>
           </template>
-          <el-sub-menu v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName">
+          <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName">
             <template #title>{{ groupName }}
               <el-col class="menu-switch">
                 <el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop/>
               </el-col>
             </template>
-            <el-menu-item v-for="(row, id) in group.list" :index="'group#'+id" :title="row.ip">
-              <el-checkbox v-model="row.show" :label="row.hostname" size="large"
-                           @change="handleSwitchByHostnameId(row)"/>
-            </el-menu-item>
-          </el-sub-menu>
+          </el-menu-item>
         </el-sub-menu>
         <el-menu-item index="addHost">
           <el-icon>
