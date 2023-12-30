@@ -54,7 +54,7 @@
           >
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
@@ -101,7 +101,7 @@
           >
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
@@ -130,7 +130,7 @@
           >
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
