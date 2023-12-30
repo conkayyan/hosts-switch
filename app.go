@@ -132,6 +132,21 @@ func (a *App) DeleteHost(groupName string, hostNameID int) string {
 	return ""
 }
 
+// DeleteHosts .
+func (a *App) DeleteHosts(hosts []hosts.Host) string {
+	for _, host := range hosts {
+		a.myHosts.Delete(host.GroupName, host.ID)
+	}
+	a.myHosts.Pretty()
+	a.myHosts.Split()
+	a.myHosts.Pretty()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
 // SetGroupName .
 func (a *App) SetGroupName(oldGroupName, groupName string) string {
 	if oldGroupName == groupName {
