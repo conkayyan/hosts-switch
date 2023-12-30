@@ -220,7 +220,7 @@ import {Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
 import {computed, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
-import {ElMessage} from 'element-plus'
+import {ElMessage, ElMessageBox} from 'element-plus'
 import 'element-plus/dist/index.css'
 import {
   AddHost,
@@ -374,15 +374,21 @@ const handleSwitchByHostnameId = (row) => {
 
 const handleDeleteHost = (index, row) => {
   console.log('delete', index, row.groupName, row.hostname, row.id)
-  DeleteHost(row.groupName, row.id).then(result => {
-    if (result !== '') {
-      ElMessage.error('delete failed!' + result)
-    } else {
-      tableData.value.splice(index, 1)
-      handleMenuSelect(activeMenuIndex.value, null)
-      ElMessage.success('delete successfully!')
-    }
-  })
+  ElMessageBox.confirm('Are you sure to delete this host?')
+      .then(() => {
+        DeleteHost(row.groupName, row.id).then(result => {
+          if (result !== '') {
+            ElMessage.error('delete failed!' + result)
+          } else {
+            tableData.value.splice(index, 1)
+            handleMenuSelect(activeMenuIndex.value, null)
+            ElMessage.success('delete successfully!')
+          }
+        })
+      })
+      .catch(() => {
+        // catch error
+      })
 }
 
 const onSubmitAddHost = () => {
