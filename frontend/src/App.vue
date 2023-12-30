@@ -1,6 +1,6 @@
 <template>
   <el-row class="tac">
-    <el-col :span="8" :lg="4" class="border-right">
+    <el-col :lg="4" :span="6" class="border-right">
       <el-menu
           class="no-border-right"
           default-active="allHosts"
@@ -43,7 +43,7 @@
         </el-menu-item>
       </el-menu>
     </el-col>
-    <el-col :span="16" class="show-content">
+    <el-col :span="18" class="show-content">
       <el-tabs v-model="activeTabName" class="ml-2 mr-2" @tab-click="handleClickTab">
         <el-tab-pane label="Normal" name="normal">
           <el-table v-if="activeMenuIndex==='allHosts'" :key="groupName"
