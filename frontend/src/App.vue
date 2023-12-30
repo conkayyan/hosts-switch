@@ -341,9 +341,11 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
   } else if (key.substring(0, 9) === 'showGroup') {
     activeMenuIndex.value = key.substring(0, 9)
     tableData.value.splice(0, tableData.value.length)
-    groupName.value = key.substring(10)
-    getListByGroup()
+    if (key.substring(10) !== "") {
+      groupName.value = key.substring(10)
+    }
   }
+  getListByGroup()
 }
 
 const handleSwitchByGroupName = (group) => {
@@ -352,8 +354,7 @@ const handleSwitchByGroupName = (group) => {
     if (result !== '') {
       ElMessage.error('switch failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('switch successfully!')
     }
   })
@@ -365,8 +366,7 @@ const handleSwitchByHostnameId = (row) => {
     if (result !== '') {
       ElMessage.error('switch failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('switch successfully!')
     }
   })
@@ -379,8 +379,7 @@ const handleDeleteHost = (index, row) => {
       ElMessage.error('delete failed!' + result)
     } else {
       tableData.value.splice(index, 1)
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('delete successfully!')
     }
   })
@@ -395,8 +394,7 @@ const onSubmitAddHost = () => {
       addHostForm.groupName = ''
       addHostForm.ip = ''
       addHostForm.hostname = ''
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -408,8 +406,7 @@ const onSubmitAllHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -421,8 +418,7 @@ const onSubmitAllInUseHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getInUseHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -434,7 +430,7 @@ const onSubmitAllGroupHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -446,7 +442,7 @@ const onSubmitAddHostsTextForm = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       addHostsTextForm.text = ""
       ElMessage.success('save successfully!')
     }
