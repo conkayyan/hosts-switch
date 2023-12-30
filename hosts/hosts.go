@@ -233,12 +233,7 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 
 func (f *MyHosts) Delete(groupName string, hostNameID int) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
-		f.ListByGroup[groupName] = Group{
-			HostsText: "",
-			GroupName: groupName,
-			Show:      true,
-			List:      map[int]*Host{},
-		}
+		return
 	}
 	delete(f.ListByGroup[groupName].List, hostNameID)
 	if len(f.ListByGroup[groupName].List) == 0 {

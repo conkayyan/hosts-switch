@@ -49,9 +49,11 @@
           <el-table v-if="activeMenuIndex==='allHosts'" :key="groupName"
                     :data="filterTableData"
                     :model="allHostsForm"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
                 <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
@@ -72,7 +74,25 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="150">
+            <el-table-column label="Action" width="150">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
                 </el-button>
@@ -96,9 +116,11 @@
           <el-table v-else-if="activeMenuIndex==='showGroup'"
                     :key="groupName"
                     :data="filterTableData"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
                 <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
@@ -114,7 +136,25 @@
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="200">
+            <el-table-column label="Action" width="200">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
@@ -125,9 +165,11 @@
           <el-table v-else-if="activeMenuIndex==='inUse'"
                     :key="groupName"
                     :data="filterTableData"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
                 <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
@@ -148,7 +190,25 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="150">
+            <el-table-column label="Action" width="150">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
@@ -216,15 +276,16 @@
 </template>
 
 <script lang="ts" setup>
-import {Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
+import {ArrowDown, Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
 import {computed, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
-import {ElMessage, ElMessageBox} from 'element-plus'
+import {ElMessage, ElMessageBox, ElTable} from 'element-plus'
 import 'element-plus/dist/index.css'
 import {
   AddHost,
   DeleteHost,
+  DeleteHosts,
   GetHostsText,
   GetInUseHostsText,
   GetList,
@@ -494,6 +555,30 @@ const filterTableData = computed(() =>
             && (!filterGroupName.value || data.groupName.toLowerCase().includes(filterGroupName.value.toLowerCase()))
     )
 )
+
+const multipleSelection = ref([])
+const handleSelectionChange = (val: []) => {
+  multipleSelection.value = val
+  console.log(multipleSelection)
+}
+
+const handleDeleteAllSelected = () => {
+  console.log('delete all selected')
+  ElMessageBox.confirm('Are you sure to delete all selected?')
+      .then(() => {
+        DeleteHosts(multipleSelection.value).then(result => {
+          if (result !== '') {
+            ElMessage.error('delete failed!' + result)
+          } else {
+            handleMenuSelect(activeMenuIndex.value, null)
+            ElMessage.success('delete successfully!')
+          }
+        })
+      })
+      .catch(() => {
+        // catch error
+      })
+}
 </script>
 
 <style scoped>

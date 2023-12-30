@@ -6,6 +6,8 @@ export function AddHost(arg1:string,arg2:string,arg3:string):Promise<string>;
 
 export function DeleteHost(arg1:string,arg2:number):Promise<string>;
 
+export function DeleteHosts(arg1: Array<hosts.Host>): Promise<string>;
+
 export function GetAllGroupNames():Promise<Array<string>>;
 
 export function GetHostsText():Promise<string>;
