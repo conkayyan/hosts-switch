@@ -101,7 +101,13 @@
           </el-table>
           <el-form v-else-if="activeMenuIndex==='addHost'" :model="addHostForm" label-width="120px">
             <el-form-item label="Group Name">
-              <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
+              <el-autocomplete
+                  v-model="addHostForm.groupName"
+                  :fetch-suggestions="querySearchGroupNames"
+                  class="el-col-10"
+                  clearable
+                  placeholder="Group Name"
+              />
             </el-form-item>
             <el-form-item label="IP">
               <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
@@ -278,7 +284,7 @@
 <script lang="ts" setup>
 import {ArrowDown, Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
-import {computed, reactive, ref} from "vue"
+import {computed, onMounted, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
 import {ElMessage, ElMessageBox, ElTable} from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -286,6 +292,7 @@ import {
   AddHost,
   DeleteHost,
   DeleteHosts,
+  GetAllGroupNames,
   GetHostsText,
   GetInUseHostsText,
   GetList,
@@ -324,6 +331,7 @@ const allGroupHostsForm = reactive({
   text: ''
 })
 const tableData = ref([])
+const allGroupNames = ref([])
 
 function getHostsText() {
   GetHostsText().then(result => {
@@ -353,8 +361,6 @@ function getListByGroup() {
     }
   })
 }
-
-getListByGroup()
 
 function getAllList() {
   GetList().then(result => {
@@ -391,6 +397,7 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
     }
   } else if (key === 'addHost') {
     activeMenuIndex.value = key
+    getAllGroupNames()
   } else if (key === 'inUse') {
     activeMenuIndex.value = key
     groupName.value = key
@@ -579,6 +586,32 @@ const handleDeleteAllSelected = () => {
         // catch error
       })
 }
+
+const getAllGroupNames = () => {
+  console.log('get all group names')
+
+  GetAllGroupNames().then(result => {
+    console.log("group names", result)
+    allGroupNames.value = []
+    for (let k in result) {
+      allGroupNames.value.push({value: result[k]})
+    }
+  })
+}
+
+const querySearchGroupNames = (queryString: string, cb: any) => {
+  const results = queryString
+      ? allGroupNames.value.filter(
+          (groupName) => groupName.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+      )
+      : allGroupNames.value
+  cb(results)
+}
+
+onMounted(() => {
+  getListByGroup()
+  getAllGroupNames()
+})
 </script>
 
 <style scoped>
