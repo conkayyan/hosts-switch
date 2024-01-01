@@ -28,6 +28,8 @@ export function SaveAllInUseHosts(arg1:string):Promise<string>;
 
 export function SetGroupName(arg1:string,arg2:string):Promise<string>;
 
+export function SetGroupNameByHostnameId(arg1: number, arg2: string): Promise<string>;
+
 export function SwitchByGroupName(arg1:string,arg2:boolean):Promise<string>;
 
 export function SwitchByHostnameId(arg1:string,arg2:number,arg3:boolean):Promise<string>;

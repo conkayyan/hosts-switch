@@ -77,7 +77,7 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Action" width="150">
+            <el-table-column label="Action" width="180">
               <template #header>
                 <el-dropdown>
                 <span class="el-dropdown-link">
@@ -98,6 +98,8 @@
               </template>
               <template #default="scope">
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
@@ -145,7 +147,7 @@
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Action" width="200">
+            <el-table-column label="Action" width="180">
               <template #header>
                 <el-dropdown>
                 <span class="el-dropdown-link">
@@ -167,6 +169,8 @@
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
@@ -199,7 +203,7 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Action" width="150">
+            <el-table-column label="Action" width="180">
               <template #header>
                 <el-dropdown>
                 <span class="el-dropdown-link">
@@ -221,6 +225,8 @@
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
@@ -302,6 +308,26 @@
       </span>
     </template>
   </el-dialog>
+  <el-dialog v-model="dialogMoveFormVisible" title="Move to">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogMoveFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogMoveForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -325,6 +351,7 @@ import {
   SaveAllHosts,
   SaveAllInUseHosts,
   SetGroupName,
+  SetGroupNameByHostnameId,
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App"
@@ -357,7 +384,10 @@ const allGroupHostsForm = reactive({
 const tableData = ref([])
 const allGroupNames = ref([])
 const dialogFormVisible = ref(false)
+const dialogMoveFormVisible = ref(false)
 const dialogForm = reactive({
+  index: 0,
+  id: 0,
   oldGroupName: '',
   groupName: '',
 })
@@ -649,6 +679,28 @@ const submitDialogForm = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('save successfully!')
+    }
+  })
+  console.log(dialogForm)
+}
+
+const openDialogMoveForm = (index, group) => {
+  dialogMoveFormVisible.value = true
+  dialogForm.index = index
+  dialogForm.id = group.id
+  dialogForm.groupName = group.groupName
+  console.log(dialogForm)
+}
+
+const submitDialogMoveForm = () => {
+  dialogMoveFormVisible.value = false
+  SetGroupNameByHostnameId(dialogForm.id, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      tableData.value.splice(dialogForm.index, 1)
       handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
