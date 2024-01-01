@@ -147,7 +147,7 @@ func (f *MyHosts) Split() {
 	}
 }
 
-func (f *MyHosts) Pretty() {
+func (f *MyHosts) PrettyByGroup() {
 	f.HostsText = ""
 	f.InUseHostsText = ""
 	f.NoInUseHostsText = ""
@@ -165,6 +165,21 @@ func (f *MyHosts) Pretty() {
 			}
 		}
 		f.ListByGroup[i] = group
+	}
+}
+
+func (f *MyHosts) PrettyByList() {
+	f.HostsText = ""
+	f.InUseHostsText = ""
+	f.NoInUseHostsText = ""
+	for _, row := range f.List {
+		if row.Show {
+			f.HostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, row.GroupName)
+			f.InUseHostsText += fmt.Sprintf("%s %s # %s\n", row.IP, row.Hostname, row.GroupName)
+		} else {
+			f.HostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, row.GroupName)
+			f.NoInUseHostsText += fmt.Sprintf("# %s %s # %s\n", row.IP, row.Hostname, row.GroupName)
+		}
 	}
 }
 
@@ -233,12 +248,7 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 
 func (f *MyHosts) Delete(groupName string, hostNameID int) {
 	if _, ok := f.ListByGroup[groupName]; !ok {
-		f.ListByGroup[groupName] = Group{
-			HostsText: "",
-			GroupName: groupName,
-			Show:      true,
-			List:      map[int]*Host{},
-		}
+		return
 	}
 	delete(f.ListByGroup[groupName].List, hostNameID)
 	if len(f.ListByGroup[groupName].List) == 0 {
@@ -321,6 +331,13 @@ func (f *MyHosts) GetAllGroupNames() []string {
 		groupNames = append(groupNames, g.GroupName)
 	}
 	return groupNames
+}
+
+func (f *MyHosts) SetGroupNameByHostnameId(hostNameID int, groupName string) {
+	if _, ok := f.List[hostNameID]; !ok {
+		return
+	}
+	f.List[hostNameID].SetGroupName(groupName)
 }
 
 func (h *Host) Switch(show bool) {

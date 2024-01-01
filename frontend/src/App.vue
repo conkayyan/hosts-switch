@@ -1,6 +1,6 @@
 <template>
   <el-row class="tac">
-    <el-col :span="8" :lg="4" class="border-right">
+    <el-col :lg="4" :span="6" class="border-right">
       <el-menu
           class="no-border-right"
           default-active="allHosts"
@@ -27,11 +27,14 @@
             </el-icon>
             <span>Host Groups</span>
           </template>
-          <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName">
+          <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName"
+                        @mouseleave="group.mouseover=false" @mouseover="group.mouseover=true">
             <template #title>{{ groupName }}
               <el-col class="menu-switch">
                 <el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop/>
               </el-col>
+              <Edit v-if="group.mouseover" style="width: 1em; height: 1em; margin-left: 8px"
+                    @click="openDialogForm(groupName)" @click.stop/>
             </template>
           </el-menu-item>
         </el-sub-menu>
@@ -43,18 +46,20 @@
         </el-menu-item>
       </el-menu>
     </el-col>
-    <el-col :span="16" class="show-content">
+    <el-col :span="18" class="show-content">
       <el-tabs v-model="activeTabName" class="ml-2 mr-2" @tab-click="handleClickTab">
         <el-tab-pane label="Normal" name="normal">
           <el-table v-if="activeMenuIndex==='allHosts'" :key="groupName"
                     :data="filterTableData"
                     :model="allHostsForm"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
@@ -72,16 +77,47 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="150">
+            <el-table-column label="Action" width="180">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
           </el-table>
           <el-form v-else-if="activeMenuIndex==='addHost'" :model="addHostForm" label-width="120px">
             <el-form-item label="Group Name">
-              <el-input v-model="addHostForm.groupName" class="el-col-10" placeholder="Group Name"/>
+              <el-autocomplete
+                  v-model="addHostForm.groupName"
+                  :fetch-suggestions="querySearchGroupNames"
+                  class="el-col-10"
+                  clearable
+                  placeholder="Group Name"
+              />
             </el-form-item>
             <el-form-item label="IP">
               <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
@@ -96,12 +132,14 @@
           <el-table v-else-if="activeMenuIndex==='showGroup'"
                     :key="groupName"
                     :data="filterTableData"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
@@ -114,10 +152,35 @@
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="200">
+            <el-table-column label="Action" width="180">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
@@ -125,12 +188,14 @@
           <el-table v-else-if="activeMenuIndex==='inUse'"
                     :key="groupName"
                     :data="filterTableData"
+                    @selection-change="handleSelectionChange"
                     stripe
                     style="width: 100%"
           >
+            <el-table-column type="selection" width="30"/>
             <el-table-column align="center" label="Active" width="80">
               <template #default="scope">
-                <el-checkbox v-model="scope.row.show" size="large" @change="handleSwitchByHostnameId(scope.row)"/>
+                <el-switch v-model="scope.row.show" @change="handleSwitchByHostnameId(scope.row)"/>
               </template>
             </el-table-column>
             <el-table-column align="center" label="IP" prop="ip" width="150">
@@ -148,10 +213,35 @@
                 <el-input v-model="filterGroupName" placeholder="Group Name" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column label="Operations" width="150">
+            <el-table-column label="Action" width="180">
+              <template #header>
+                <el-dropdown>
+                <span class="el-dropdown-link">
+                  Action
+                  <el-icon class="el-icon--right">
+                    <arrow-down/>
+                  </el-icon>
+                </span>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
+                        </el-link>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
               <template #default="scope">
                 <!--            <el-button size="small" @click="handleEditHost(scope.$index, scope.row)">Edit</el-button>-->
                 <el-button size="small" type="danger" @click="handleDeleteHost(scope.$index, scope.row)">Delete
+                </el-button>
+                <el-button size="small" type="primary" @click="openDialogMoveForm(scope.$index, scope.row)">Move
                 </el-button>
               </template>
             </el-table-column>
@@ -213,18 +303,80 @@
       </el-tabs>
     </el-col>
   </el-row>
+  <el-dialog v-model="dialogFormVisible" title="Change group name">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="dialogMoveFormVisible" title="Move to">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogMoveFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogMoveForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="dialogMoveSelectedFormVisible" title="Move all selected to">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogMoveSelectedFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogMoveSelectedForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import {Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
+import {ArrowDown, Document, DocumentAdd, Edit, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
-import {computed, reactive, ref} from "vue"
+import {computed, onMounted, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
-import {ElMessage} from 'element-plus'
+import {ElMessage, ElMessageBox, ElTable} from 'element-plus'
 import 'element-plus/dist/index.css'
 import {
   AddHost,
   DeleteHost,
+  DeleteHosts,
+  GetAllGroupNames,
   GetHostsText,
   GetInUseHostsText,
   GetList,
@@ -233,6 +385,9 @@ import {
   SaveAllGroupHosts,
   SaveAllHosts,
   SaveAllInUseHosts,
+  SetGroupName,
+  SetGroupNameByHostnameId,
+  SetGroupNameByHosts,
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App"
@@ -263,6 +418,16 @@ const allGroupHostsForm = reactive({
   text: ''
 })
 const tableData = ref([])
+const allGroupNames = ref([])
+const dialogFormVisible = ref(false)
+const dialogMoveFormVisible = ref(false)
+const dialogMoveSelectedFormVisible = ref(false)
+const dialogForm = reactive({
+  index: 0,
+  id: 0,
+  oldGroupName: '',
+  groupName: '',
+})
 
 function getHostsText() {
   GetHostsText().then(result => {
@@ -292,8 +457,6 @@ function getListByGroup() {
     }
   })
 }
-
-getListByGroup()
 
 function getAllList() {
   GetList().then(result => {
@@ -330,6 +493,7 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
     }
   } else if (key === 'addHost') {
     activeMenuIndex.value = key
+    getAllGroupNames()
   } else if (key === 'inUse') {
     activeMenuIndex.value = key
     groupName.value = key
@@ -341,9 +505,11 @@ const handleMenuSelect = (key: string, keyPath: string[]) => {
   } else if (key.substring(0, 9) === 'showGroup') {
     activeMenuIndex.value = key.substring(0, 9)
     tableData.value.splice(0, tableData.value.length)
-    groupName.value = key.substring(10)
-    getListByGroup()
+    if (key.substring(10) !== "") {
+      groupName.value = key.substring(10)
+    }
   }
+  getListByGroup()
 }
 
 const handleSwitchByGroupName = (group) => {
@@ -352,8 +518,7 @@ const handleSwitchByGroupName = (group) => {
     if (result !== '') {
       ElMessage.error('switch failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('switch successfully!')
     }
   })
@@ -365,8 +530,7 @@ const handleSwitchByHostnameId = (row) => {
     if (result !== '') {
       ElMessage.error('switch failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('switch successfully!')
     }
   })
@@ -374,16 +538,21 @@ const handleSwitchByHostnameId = (row) => {
 
 const handleDeleteHost = (index, row) => {
   console.log('delete', index, row.groupName, row.hostname, row.id)
-  DeleteHost(row.groupName, row.id).then(result => {
-    if (result !== '') {
-      ElMessage.error('delete failed!' + result)
-    } else {
-      tableData.value.splice(index, 1)
-      getHostsText()
-      getListByGroup()
-      ElMessage.success('delete successfully!')
-    }
-  })
+  ElMessageBox.confirm('Are you sure to delete this host?')
+      .then(() => {
+        DeleteHost(row.groupName, row.id).then(result => {
+          if (result !== '') {
+            ElMessage.error('delete failed!' + result)
+          } else {
+            tableData.value.splice(index, 1)
+            handleMenuSelect(activeMenuIndex.value, null)
+            ElMessage.success('delete successfully!')
+          }
+        })
+      })
+      .catch(() => {
+        // catch error
+      })
 }
 
 const onSubmitAddHost = () => {
@@ -395,8 +564,7 @@ const onSubmitAddHost = () => {
       addHostForm.groupName = ''
       addHostForm.ip = ''
       addHostForm.hostname = ''
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -408,8 +576,7 @@ const onSubmitAllHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -421,8 +588,7 @@ const onSubmitAllInUseHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getInUseHostsText()
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -434,7 +600,7 @@ const onSubmitAllGroupHosts = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
   })
@@ -446,7 +612,7 @@ const onSubmitAddHostsTextForm = () => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
-      getListByGroup()
+      handleMenuSelect(activeMenuIndex.value, null)
       addHostsTextForm.text = ""
       ElMessage.success('save successfully!')
     }
@@ -492,6 +658,118 @@ const filterTableData = computed(() =>
             && (!filterGroupName.value || data.groupName.toLowerCase().includes(filterGroupName.value.toLowerCase()))
     )
 )
+
+const multipleSelection = ref([])
+const handleSelectionChange = (val: []) => {
+  multipleSelection.value = val
+  console.log(multipleSelection)
+}
+
+const handleDeleteAllSelected = () => {
+  console.log('delete all selected')
+  ElMessageBox.confirm('Are you sure to delete all selected?')
+      .then(() => {
+        DeleteHosts(multipleSelection.value).then(result => {
+          if (result !== '') {
+            ElMessage.error('delete failed!' + result)
+          } else {
+            handleMenuSelect(activeMenuIndex.value, null)
+            ElMessage.success('delete successfully!')
+          }
+        })
+      })
+      .catch(() => {
+        // catch error
+      })
+}
+
+const getAllGroupNames = () => {
+  console.log('get all group names')
+
+  GetAllGroupNames().then(result => {
+    console.log("group names", result)
+    allGroupNames.value = []
+    for (let k in result) {
+      allGroupNames.value.push({value: result[k]})
+    }
+  })
+}
+
+const querySearchGroupNames = (queryString: string, cb: any) => {
+  const results = queryString
+      ? allGroupNames.value.filter(
+          (groupName) => groupName.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+      )
+      : allGroupNames.value
+  cb(results)
+}
+
+const resetDialogForm = () => {
+  dialogForm.index = 0
+  dialogForm.id = 0
+  dialogForm.oldGroupName = ''
+  dialogForm.groupName = ''
+}
+
+const openDialogForm = (groupName: string) => {
+  dialogFormVisible.value = true
+  dialogForm.oldGroupName = groupName
+  dialogForm.groupName = groupName
+}
+
+const submitDialogForm = () => {
+  dialogFormVisible.value = false
+  SetGroupName(dialogForm.oldGroupName, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('save successfully!')
+    }
+  })
+  resetDialogForm()
+}
+
+const openDialogMoveForm = (index, group) => {
+  dialogMoveFormVisible.value = true
+  dialogForm.index = index
+  dialogForm.id = group.id
+  dialogForm.groupName = group.groupName
+  console.log(dialogForm)
+}
+
+const submitDialogMoveForm = () => {
+  dialogMoveFormVisible.value = false
+  SetGroupNameByHostnameId(dialogForm.id, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      tableData.value.splice(dialogForm.index, 1)
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('save successfully!')
+    }
+  })
+  resetDialogForm()
+}
+
+const submitDialogMoveSelectedForm = () => {
+  console.log('move all selected')
+  dialogMoveSelectedFormVisible.value = false
+  SetGroupNameByHosts(multipleSelection.value, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('delete failed!' + result)
+    } else {
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('delete successfully!')
+    }
+  })
+  resetDialogForm()
+}
+
+onMounted(() => {
+  getListByGroup()
+  getAllGroupNames()
+})
 </script>
 
 <style scoped>
@@ -502,7 +780,7 @@ const filterTableData = computed(() =>
 .menu-switch {
   position: absolute;
   right: 0;
-  padding-right: 50px;
+  padding-right: 20px;
 }
 
 .ml-2 {

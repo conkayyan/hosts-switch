@@ -10,6 +10,10 @@ export function DeleteHost(arg1, arg2) {
   return window['go']['main']['App']['DeleteHost'](arg1, arg2);
 }
 
+export function DeleteHosts(arg1) {
+  return window['go']['main']['App']['DeleteHosts'](arg1);
+}
+
 export function GetAllGroupNames() {
   return window['go']['main']['App']['GetAllGroupNames']();
 }
@@ -48,6 +52,14 @@ export function SaveAllInUseHosts(arg1) {
 
 export function SetGroupName(arg1, arg2) {
   return window['go']['main']['App']['SetGroupName'](arg1, arg2);
+}
+
+export function SetGroupNameByHostnameId(arg1, arg2) {
+  return window['go']['main']['App']['SetGroupNameByHostnameId'](arg1, arg2);
+}
+
+export function SetGroupNameByHosts(arg1, arg2) {
+  return window['go']['main']['App']['SetGroupNameByHosts'](arg1, arg2);
 }
 
 export function SwitchByGroupName(arg1, arg2) {
