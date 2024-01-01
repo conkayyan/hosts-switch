@@ -27,11 +27,14 @@
             </el-icon>
             <span>Host Groups</span>
           </template>
-          <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName">
+          <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName"
+                        @mouseleave="group.mouseover=false" @mouseover="group.mouseover=true">
             <template #title>{{ groupName }}
               <el-col class="menu-switch">
                 <el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop/>
               </el-col>
+              <Edit v-if="group.mouseover" style="width: 1em; height: 1em; margin-left: 8px"
+                    @click="openDialogForm(groupName)" @click.stop/>
             </template>
           </el-menu-item>
         </el-sub-menu>
@@ -279,10 +282,30 @@
       </el-tabs>
     </el-col>
   </el-row>
+  <el-dialog v-model="dialogFormVisible" title="Change group name">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import {ArrowDown, Document, DocumentAdd, Menu as IconMenu} from '@element-plus/icons-vue'
+import {ArrowDown, Document, DocumentAdd, Edit, Menu as IconMenu} from '@element-plus/icons-vue'
 import CodeEditor from './components/CodeEditor.vue'
 import {computed, onMounted, reactive, ref} from "vue"
 import type {TabsPaneContext} from 'element-plus'
@@ -301,6 +324,7 @@ import {
   SaveAllGroupHosts,
   SaveAllHosts,
   SaveAllInUseHosts,
+  SetGroupName,
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App"
@@ -332,6 +356,11 @@ const allGroupHostsForm = reactive({
 })
 const tableData = ref([])
 const allGroupNames = ref([])
+const dialogFormVisible = ref(false)
+const dialogForm = reactive({
+  oldGroupName: '',
+  groupName: '',
+})
 
 function getHostsText() {
   GetHostsText().then(result => {
@@ -608,6 +637,25 @@ const querySearchGroupNames = (queryString: string, cb: any) => {
   cb(results)
 }
 
+const openDialogForm = (groupName: string) => {
+  dialogFormVisible.value = true
+  dialogForm.oldGroupName = groupName
+  dialogForm.groupName = groupName
+}
+
+const submitDialogForm = () => {
+  dialogFormVisible.value = false
+  SetGroupName(dialogForm.oldGroupName, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('save failed!' + result)
+    } else {
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('save successfully!')
+    }
+  })
+  console.log(dialogForm)
+}
+
 onMounted(() => {
   getListByGroup()
   getAllGroupNames()
@@ -622,7 +670,7 @@ onMounted(() => {
 .menu-switch {
   position: absolute;
   right: 0;
-  padding-right: 50px;
+  padding-right: 20px;
 }
 
 .ml-2 {
