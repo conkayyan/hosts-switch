@@ -204,3 +204,18 @@ func (a *App) SwitchByHostnameId(groupName string, hostNameID int, show bool) st
 	}
 	return ""
 }
+
+// SetGroupNameByHosts .
+func (a *App) SetGroupNameByHosts(hosts []hosts.Host, groupName string) string {
+	for _, host := range hosts {
+		a.myHosts.SetGroupNameByHostnameId(host.ID, groupName)
+	}
+	a.myHosts.PrettyByList()
+	a.myHosts.Split()
+	a.myHosts.PrettyByGroup()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
