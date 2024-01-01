@@ -29,7 +29,7 @@ func (a *App) startup(ctx context.Context) {
 		log.Println(err.Error())
 	}
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Print()
 }
 
@@ -57,7 +57,7 @@ func (a *App) GetInUseHostsText() string {
 func (a *App) SaveAllHosts(hostsText string) string {
 	a.myHosts.HostsText = hostsText
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -69,7 +69,7 @@ func (a *App) SaveAllHosts(hostsText string) string {
 func (a *App) SaveAllInUseHosts(hostsText string) string {
 	a.myHosts.HostsText = a.myHosts.NoInUseHostsText + "\n" + hostsText
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	fmt.Println(a.myHosts.HostsText)
 
@@ -82,9 +82,9 @@ func (a *App) SaveAllInUseHosts(hostsText string) string {
 // SaveAllGroupHosts .
 func (a *App) SaveAllGroupHosts(groupName, hostsText string) string {
 	a.myHosts.SetGroup(groupName, hostsText)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -95,9 +95,9 @@ func (a *App) SaveAllGroupHosts(groupName, hostsText string) string {
 // AddHost .
 func (a *App) AddHost(groupName string, ip string, hostname string) string {
 	a.myHosts.Add(groupName, ip, hostname)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -109,7 +109,7 @@ func (a *App) AddHost(groupName string, ip string, hostname string) string {
 func (a *App) SaveAddHostsText(hostsText string) string {
 	a.myHosts.HostsText = a.myHosts.HostsText + "\n" + hostsText
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	fmt.Println(a.myHosts.HostsText)
 
@@ -122,9 +122,9 @@ func (a *App) SaveAddHostsText(hostsText string) string {
 // DeleteHost .
 func (a *App) DeleteHost(groupName string, hostNameID int) string {
 	a.myHosts.Delete(groupName, hostNameID)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -137,9 +137,9 @@ func (a *App) DeleteHosts(hosts []hosts.Host) string {
 	for _, host := range hosts {
 		a.myHosts.Delete(host.GroupName, host.ID)
 	}
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -153,8 +153,22 @@ func (a *App) SetGroupName(oldGroupName, groupName string) string {
 		return ""
 	}
 	a.myHosts.SetGroupNameByOldGroupName(oldGroupName, groupName)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
+	a.myHosts.PrettyByGroup()
+
+	if err := a.myHosts.Write(); err != nil {
+		return err.Error()
+	}
+	return ""
+}
+
+// SetGroupNameByHostnameId .
+func (a *App) SetGroupNameByHostnameId(hostNameID int, groupName string) string {
+	a.myHosts.SetGroupNameByHostnameId(hostNameID, groupName)
+	a.myHosts.PrettyByList()
+	a.myHosts.Split()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -165,9 +179,9 @@ func (a *App) SetGroupName(oldGroupName, groupName string) string {
 // SwitchByGroupName .
 func (a *App) SwitchByGroupName(groupName string, show bool) string {
 	a.myHosts.SwitchByGroupName(groupName, show)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
@@ -183,7 +197,7 @@ func (a *App) GetAllGroupNames() []string {
 // SwitchByHostnameId .
 func (a *App) SwitchByHostnameId(groupName string, hostNameID int, show bool) string {
 	a.myHosts.SwitchByHostNameId(groupName, hostNameID, show)
-	a.myHosts.Pretty()
+	a.myHosts.PrettyByGroup()
 
 	if err := a.myHosts.Write(); err != nil {
 		return err.Error()
