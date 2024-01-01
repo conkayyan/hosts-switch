@@ -92,6 +92,11 @@
                         <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
                         </el-link>
                       </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
+                        </el-link>
+                      </el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -162,6 +167,11 @@
                         <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
                         </el-link>
                       </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
+                        </el-link>
+                      </el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -216,6 +226,11 @@
                     <el-dropdown-menu>
                       <el-dropdown-item>
                         <el-link type="primary" @click="handleDeleteAllSelected()" @click.stop>Delete All Selected
+                        </el-link>
+                      </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-link type="primary" @click="dialogMoveSelectedFormVisible=true" @click.stop>Move All
+                          Selected
                         </el-link>
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -328,6 +343,26 @@
       </span>
     </template>
   </el-dialog>
+  <el-dialog v-model="dialogMoveSelectedFormVisible" title="Move all selected to">
+    <el-form :model="dialogForm">
+      <el-form-item label="Group Name">
+        <el-autocomplete
+            v-model="dialogForm.groupName"
+            :fetch-suggestions="querySearchGroupNames"
+            clearable
+            placeholder="Group Name"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogMoveSelectedFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitDialogMoveSelectedForm">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -352,6 +387,7 @@ import {
   SaveAllInUseHosts,
   SetGroupName,
   SetGroupNameByHostnameId,
+  SetGroupNameByHosts,
   SwitchByGroupName,
   SwitchByHostnameId
 } from "../wailsjs/go/main/App"
@@ -385,6 +421,7 @@ const tableData = ref([])
 const allGroupNames = ref([])
 const dialogFormVisible = ref(false)
 const dialogMoveFormVisible = ref(false)
+const dialogMoveSelectedFormVisible = ref(false)
 const dialogForm = reactive({
   index: 0,
   id: 0,
@@ -706,6 +743,19 @@ const submitDialogMoveForm = () => {
     }
   })
   console.log(dialogForm)
+}
+
+const submitDialogMoveSelectedForm = () => {
+  console.log('move all selected')
+  dialogMoveSelectedFormVisible.value = false
+  SetGroupNameByHosts(multipleSelection.value, dialogForm.groupName).then(result => {
+    if (result !== '') {
+      ElMessage.error('delete failed!' + result)
+    } else {
+      handleMenuSelect(activeMenuIndex.value, null)
+      ElMessage.success('delete successfully!')
+    }
+  })
 }
 
 onMounted(() => {

@@ -58,6 +58,10 @@ export function SetGroupNameByHostnameId(arg1, arg2) {
   return window['go']['main']['App']['SetGroupNameByHostnameId'](arg1, arg2);
 }
 
+export function SetGroupNameByHosts(arg1, arg2) {
+  return window['go']['main']['App']['SetGroupNameByHosts'](arg1, arg2);
+}
+
 export function SwitchByGroupName(arg1, arg2) {
   return window['go']['main']['App']['SwitchByGroupName'](arg1, arg2);
 }
