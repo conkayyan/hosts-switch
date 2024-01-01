@@ -11,7 +11,7 @@ export function DeleteHost(arg1, arg2) {
 }
 
 export function DeleteHosts(arg1) {
-    return window['go']['main']['App']['DeleteHosts'](arg1);
+  return window['go']['main']['App']['DeleteHosts'](arg1);
 }
 
 export function GetAllGroupNames() {
