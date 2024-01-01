@@ -704,6 +704,13 @@ const querySearchGroupNames = (queryString: string, cb: any) => {
   cb(results)
 }
 
+const resetDialogForm = () => {
+  dialogForm.index = 0
+  dialogForm.id = 0
+  dialogForm.oldGroupName = ''
+  dialogForm.groupName = ''
+}
+
 const openDialogForm = (groupName: string) => {
   dialogFormVisible.value = true
   dialogForm.oldGroupName = groupName
@@ -720,7 +727,7 @@ const submitDialogForm = () => {
       ElMessage.success('save successfully!')
     }
   })
-  console.log(dialogForm)
+  resetDialogForm()
 }
 
 const openDialogMoveForm = (index, group) => {
@@ -742,7 +749,7 @@ const submitDialogMoveForm = () => {
       ElMessage.success('save successfully!')
     }
   })
-  console.log(dialogForm)
+  resetDialogForm()
 }
 
 const submitDialogMoveSelectedForm = () => {
@@ -756,6 +763,7 @@ const submitDialogMoveSelectedForm = () => {
       ElMessage.success('delete successfully!')
     }
   })
+  resetDialogForm()
 }
 
 onMounted(() => {
