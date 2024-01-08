@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,14 +13,14 @@
     "@codemirror/lang-json": "^6.0.0",
     "@codemirror/theme-one-dark": "^6.0.0",
     "codemirror": "^6.0.1",
-    "element-plus": "^2.2.12",
-    "vue": "^3.2.25",
+    "element-plus": "^2.4.4",
+    "vue": "^3.2.37",
     "vue-codemirror": "^6.0.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.3.3",
-    "unplugin-auto-import": "^0.11.1",
-    "unplugin-vue-components": "^0.22.4",
-    "vite": "^2.5.10"
+    "@vitejs/plugin-vue": "^3.0.3",
+    "unplugin-auto-import": "^0.17.3",
+    "unplugin-vue-components": "^0.26.0",
+    "vite": "^3.0.7"
   }
 }
