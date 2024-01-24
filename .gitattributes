@@ -2,6 +2,7 @@
 *.css linguist-language=GoLang
 *.html linguist-language=GoLang
 *.vue linguist-language=GoLang
-*.nsis linguist-language=GoLang
+*.nsi linguist-language=GoLang
+*.nsh linguist-language=GoLang
 *.sh linguist-language=GoLang
 *.ts linguist-language=GoLang
