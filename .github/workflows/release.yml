@@ -1,133 +1,49 @@
-name: Release
+name: Wails build
 
 on:
+  push:
+    tags:
+      # Match any new tag
+      - '*'
 
-  release:
-
-    types: [ created ]
+env:
+  # Necessary for most environments as build failure can occur due to OOM issues
+  NODE_OPTIONS: "--max-old-space-size=4096"
 
 jobs:
-
   build:
-
     strategy:
+      # Failure in one platform build won't impact the others
+      fail-fast: false
       matrix:
-        include:
-          - runs-on: ubuntu-latest
-            binary-name: hosts-switch_linux_amd64_${{ github.ref_name }}
-            binary-path: ./build/linux/
-            format: '.deb'
-          - runs-on: windows-latest
-            binary-name: hosts-switch_windows_amd64_${{ github.ref_name }}
-            binary-path: ./build/bin/
-            format: '.exe'
-          - runs-on: macos-latest
-            binary-name: hosts-switch_darwin_amd64_${{ github.ref_name }}
-            binary-path: ./build/bin/
-            format: '.app'
+        build:
+          - name: 'hosts-switch-linux-amd64'
+            platform: 'linux/amd64'
+            os: 'ubuntu-latest'
+          - name: 'hosts-switch-windows-amd64'
+            platform: 'windows/amd64'
+            os: 'windows-latest'
+          - name: 'hosts-switch'
+            platform: 'darwin/universal'
+            os: 'macos-latest'
 
-    runs-on: ${{ matrix.runs-on }}
-
+    runs-on: ${{ matrix.build.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Nodejs
-        uses: actions/setup-node@v2
+        uses: actions/checkout@v2
         with:
-          node-version: v16.14.2
-          registry-url: https://registry.npmjs.com/
+          submodules: recursive
 
-      - name: Install Vue Dependencies
-        run: |
-          cd frontend
-          npm install
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Build wails
+        #        uses: dAppServer/wails-build-action@v2.2
+        uses: conkayyan/wails-build-action@dev
+        id: build
         with:
-          go-version: 1.21.2
-
-      - name: Set up Linux Environment
-        if: ${{ matrix.runs-on == 'ubuntu-latest' }}
-        run: |
-          sudo apt-get install libwebkit2gtk-4.0-dev
-          sudo apt install libgtk-3-dev
-          sudo apt install nsis
-
-      #- name: Run Windows UPX
-      #  if: ${{ matrix.runs-on == 'windows-latest' }}
-      #  uses: crazy-max/ghaction-upx@v2
-      #  with:
-      #    version: v3.96
-      #  files: |
-      #    ./build/bin/hosts-switch.exe
-      #  args: -fq
-
-      #- name: Set Windows UPX
-      #  run: setx -m PATH '%PATH%;C:\hostedtoolcache\windows\ghaction-upx\3.96\x64\upx-3.96-win64\'
-
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.7.1
-
-      - name: Check Environment
-        run: wails doctor
-
-      - name: Build Linux
-        if: ${{ matrix.runs-on == 'ubuntu-latest' }}
-        run: |
-          cd scripts
-          sh build-linux-deb.sh ${{ github.ref_name }}
-
-      - name: Build Windows
-        if: ${{ matrix.runs-on == 'windows-latest' }}
-        # run: wails build --clean --platform windows -nsis -webview2 embed
-        run: |
-          wails build --clean --platform windows -webview2 Embed
-          cd ${{ matrix.binary-path }}
-          ren hosts-switch.exe ${{ matrix.binary-name }}${{ matrix.format }}
-
-      - name: Build MacOs
-        if: ${{ matrix.runs-on == 'macos-latest' }}
-        run: |
-          wails build --clean --platform darwin/amd64
-          cd ${{ matrix.binary-path }}
-          mv hosts-switch.app ${{ matrix.binary-name }}${{ matrix.format }}
-
-      - name: Archive Release
-        uses: thedoctor0/zip-release@main
-        with:
-          type: zip
-          filename: ${{ matrix.binary-name }}.zip
-          directory: ${{ matrix.binary-path }}
-          path: .
-          # exclusions: '*.git* /*node_modules/* .editorconfig'
-
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.2.3
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Upload Release Asset
-        if: ${{ matrix.runs-on != 'macos-latest' }}
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ${{ matrix.binary-path }}${{ matrix.binary-name }}${{ matrix.format }}
-          asset_name: ${{ matrix.binary-name }}${{ matrix.format }}
-          asset_content_type: application/octet-stream
-
-      - name: Upload Release Zip Asset
-        id: upload-release-zip-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ${{ matrix.binary-path }}${{ matrix.binary-name }}.zip
-          asset_name: ${{ matrix.binary-name }}.zip
-          asset_content_type: application/zip
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: true
+          go-version: '1.21.2'
+          wails-version: 'v2.7.1'
+          node-version: '16.14.2'
+          deb-app: hosts-switch
+          deb-app-name: "Hosts Switch"

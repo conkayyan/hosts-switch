@@ -1,8 +1,8 @@
 #!/bin/sh
 release=$(printf %s "$1" | tr -d "v")
-app=hosts-switch
-app_name="Hosts Switch"
-app_dir=${app}_linux_amd64_v${release}
+app=$(printf %s "$2")
+app_name=$(printf %s "$3")
+app_dir=${app}-linux-amd64
 
 cd ../
 
@@ -12,8 +12,7 @@ mkdir -p build/linux/${app_dir}/usr/share/icons/hicolor/1024x1024/apps
 mkdir -p build/linux/${app_dir}/usr/share/icons/hicolor/256x256/apps
 mkdir -p build/linux/${app_dir}/DEBIAN
 
-wails build --clean --platform linux/amd64
-cp build/bin/hosts-switch build/linux/${app_dir}/usr/bin/${app}
+cp build/bin/${app}-linux-amd64 build/linux/${app_dir}/usr/bin/${app}
 
 cp build/appicon.png build/linux/${app_dir}/usr/share/icons/hicolor/1024x1024/apps/${app}.png
 cp build/appicon.png build/linux/${app_dir}/usr/share/icons/hicolor/256x256/apps/${app}.png
@@ -36,8 +35,10 @@ Section: base
 Priority: optional
 Architecture: amd64
 Maintainer: conkay <conkay@foxmail.com>
-Description: Hosts Switch
+Description: ${app_name}
+Homepage: https://github.com/conkayyan/${app}
 EOF
 
 dpkg-deb --build build/linux/${app_dir}
-rm -rf build/linux/${app_dir}
+mv build/linux/${app_dir}.deb build/bin/
+rm -rf build/linux
