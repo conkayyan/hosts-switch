@@ -30,8 +30,8 @@ To build a redistributable, production mode package, use `wails build`.
 
 ## Download
 
-Linux: [hosts-switch_linux_amd64_v0.1.0.deb](https://github.com/conkayyan/hosts-switch/releases/download/v0.1.0/hosts-switch_linux_amd64_v0.1.0.deb), [hosts-switch_linux_amd64_v0.1.0.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.1.0/hosts-switch_linux_amd64_v0.1.0.zip)
+Linux: [hosts-switch-linux-amd64.deb](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch-linux-amd64.deb), [hosts-switch-linux-amd64](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch-linux-amd64)
 
-Windows: [hosts-switch_windows_amd64_v0.1.0.exe](https://github.com/conkayyan/hosts-switch/releases/download/v0.1.0/hosts-switch_windows_amd64_v0.1.0.exe), [hosts-switch_windows_amd64_v0.1.0.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.1.0/hosts-switch_windows_amd64_v0.1.0.zip)
+Windows: [hosts-switch-windows-amd64](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch-windows-amd64), [hosts-switch-amd64-installer.exe](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch-amd64-installer.exe)
 
-MacOs: [hosts-switch_darwin_amd64_v0.1.0.zip](https://github.com/conkayyan/hosts-switch/releases/download/v0.1.0/hosts-switch_darwin_amd64_v0.1.0.zip)
+MacOs: [hosts-switch.pkg](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch.pkg), [hosts-switch.app.zip](https://github.com/conkayyan/hosts-switch/releases/latest/download/hosts-switch.app.zip)
