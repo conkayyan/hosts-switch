@@ -26,12 +26,8 @@ export function GetInUseHostsText() {
   return window['go']['main']['App']['GetInUseHostsText']();
 }
 
-export function GetList() {
-  return window['go']['main']['App']['GetList']();
-}
-
-export function GetListByGroup() {
-  return window['go']['main']['App']['GetListByGroup']();
+export function GetMyHosts() {
+  return window['go']['main']['App']['GetMyHosts']();
 }
 
 export function SaveAddHostsText(arg1) {

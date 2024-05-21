@@ -29,10 +29,11 @@
           </template>
           <el-menu-item v-for="(group, groupName) in listByGroup.list" :index="'showGroup:'+groupName"
                         @mouseleave="group.mouseover=false" @mouseover="group.mouseover=true">
-            <template #title>{{ groupName }}
-              <el-col class="menu-switch">
-                <el-switch v-model="group.show" @change="handleSwitchByGroupName(group)" @click.stop/>
-              </el-col>
+            <template #title>
+              <el-checkbox v-model="group.show" :indeterminate="group.showNum>0 && group.hideNum>0"
+                           :checked="group.showNum>0 && group.hideNum===0" @change="handleSwitchByGroupName(group)"
+                           @click.stop class="mr-1"/>
+              {{ groupName }}
               <Edit v-if="group.mouseover" style="width: 1em; height: 1em; margin-left: 8px"
                     @click="openDialogForm(groupName)" @click.stop/>
             </template>
@@ -67,7 +68,7 @@
                 <el-input v-model="filterIP" placeholder="IP" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Hostname" prop="hostname">
+            <el-table-column align="center" label="Hostname" prop="hostName">
               <template #header>
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
@@ -123,7 +124,7 @@
               <el-input v-model="addHostForm.ip" class="el-col-10" placeholder="e.g. 127.0.0.1"/>
             </el-form-item>
             <el-form-item label="Host">
-              <el-input v-model="addHostForm.hostname" class="el-col-10" placeholder="e.g. www.domain.com"/>
+              <el-input v-model="addHostForm.hostName" class="el-col-10" placeholder="e.g. www.domain.com"/>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="onSubmitAddHost">Add</el-button>
@@ -147,7 +148,7 @@
                 <el-input v-model="filterIP" placeholder="IP" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Hostname" prop="hostname">
+            <el-table-column align="center" label="Hostname" prop="hostName">
               <template #header>
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
@@ -203,7 +204,7 @@
                 <el-input v-model="filterIP" placeholder="IP" size="small"/>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="Hostname" prop="hostname">
+            <el-table-column align="center" label="Hostname" prop="hostName">
               <template #header>
                 <el-input v-model="filterHostname" placeholder="Hostname" size="small"/>
               </template>
@@ -379,8 +380,7 @@ import {
   GetAllGroupNames,
   GetHostsText,
   GetInUseHostsText,
-  GetList,
-  GetListByGroup,
+  GetMyHosts,
   SaveAddHostsText,
   SaveAllGroupHosts,
   SaveAllHosts,
@@ -403,7 +403,7 @@ const listByGroup = reactive({list: {}, hostsText: ''})
 const addHostForm = reactive({
   groupName: '',
   ip: '',
-  hostname: '',
+  hostName: '',
 })
 const addHostsTextForm = reactive({
   text: ''
@@ -442,9 +442,9 @@ function getInUseHostsText() {
 }
 
 function getListByGroup() {
-  GetListByGroup().then(result => {
-    console.log("listByGroup", result)
-    listByGroup.list = result
+  GetMyHosts().then(result => {
+    console.log("listByGroup", result.listByGroup)
+    listByGroup.list = result.listByGroup
 
     if (groupName.value !== "" && activeMenuIndex.value === "showGroup") {
       tableData.value.splice(0, tableData.value.length)
@@ -459,24 +459,24 @@ function getListByGroup() {
 }
 
 function getAllList() {
-  GetList().then(result => {
-    console.log("list", result)
+  GetMyHosts().then(result => {
+    console.log("list", result.list)
 
     tableData.value.splice(0, tableData.value.length)
-    for (let k in result) {
-      tableData.value.push(result[k])
+    for (let k in result.list) {
+      tableData.value.push(result.list[k])
     }
   })
 }
 
 function getActiveList() {
-  GetList().then(result => {
-    console.log("list", result)
+  GetMyHosts().then(result => {
+    console.log("list", result.list)
 
     tableData.value.splice(0, tableData.value.length)
-    for (let k in result) {
-      if (result[k].show) {
-        tableData.value.push(result[k])
+    for (let k in result.list) {
+      if (result.list[k].show) {
+        tableData.value.push(result.list[k])
       }
     }
   })
@@ -525,7 +525,7 @@ const handleSwitchByGroupName = (group) => {
 }
 
 const handleSwitchByHostnameId = (row) => {
-  console.log('switch', row.groupName, row.id, row.hostname, row.show)
+  console.log('switch', row.groupName, row.id, row.hostName, row.show)
   SwitchByHostnameId(row.groupName, row.id, row.show).then(result => {
     if (result !== '') {
       ElMessage.error('switch failed!' + result)
@@ -537,7 +537,7 @@ const handleSwitchByHostnameId = (row) => {
 }
 
 const handleDeleteHost = (index, row) => {
-  console.log('delete', index, row.groupName, row.hostname, row.id)
+  console.log('delete', index, row.groupName, row.hostName, row.id)
   ElMessageBox.confirm('Are you sure to delete this host?')
       .then(() => {
         DeleteHost(row.groupName, row.id).then(result => {
@@ -557,13 +557,13 @@ const handleDeleteHost = (index, row) => {
 
 const onSubmitAddHost = () => {
   console.log('submit add host!')
-  AddHost(addHostForm.groupName, addHostForm.ip, addHostForm.hostname).then(result => {
+  AddHost(addHostForm.groupName, addHostForm.ip, addHostForm.hostName).then(result => {
     if (result !== '') {
       ElMessage.error('save failed!' + result)
     } else {
       addHostForm.groupName = ''
       addHostForm.ip = ''
-      addHostForm.hostname = ''
+      addHostForm.hostName = ''
       handleMenuSelect(activeMenuIndex.value, null)
       ElMessage.success('save successfully!')
     }
@@ -654,7 +654,7 @@ const handleClickTab = (tab: TabsPaneContext, event: Event) => {
 const filterTableData = computed(() =>
     tableData.value.filter(
         (data) => (!filterIP.value || data.ip.toLowerCase().includes(filterIP.value.toLowerCase()))
-            && (!filterHostname.value || data.hostname.toLowerCase().includes(filterHostname.value.toLowerCase()))
+            && (!filterHostname.value || data.hostName.toLowerCase().includes(filterHostname.value.toLowerCase()))
             && (!filterGroupName.value || data.groupName.toLowerCase().includes(filterGroupName.value.toLowerCase()))
     )
 )
@@ -777,14 +777,12 @@ onMounted(() => {
   height: 100vh;
 }
 
-.menu-switch {
-  position: absolute;
-  right: 0;
-  padding-right: 20px;
-}
-
 .ml-2 {
   margin-left: 20px;
+}
+
+.mr-1 {
+  margin-right: 10px;
 }
 
 .mr-2 {

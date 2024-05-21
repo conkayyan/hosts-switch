@@ -14,9 +14,7 @@ export function GetHostsText():Promise<string>;
 
 export function GetInUseHostsText(): Promise<string>;
 
-export function GetList():Promise<hosts.List>;
-
-export function GetListByGroup():Promise<hosts.ListByGroup>;
+export function GetMyHosts(): Promise<hosts.MyHosts>;
 
 export function SaveAddHostsText(arg1: string): Promise<string>;
 

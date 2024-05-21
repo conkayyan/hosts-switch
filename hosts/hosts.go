@@ -8,36 +8,40 @@ import (
 	"strings"
 )
 
-type Host struct {
-	ID        int    `json:"id"`
-	Show      bool   `json:"show"`
-	IP        string `json:"ip"`
-	Hostname  string `json:"hostname"`
-	GroupName string `json:"groupName"`
-}
+type (
+	Host struct {
+		ID        int    `json:"id"`
+		Show      bool   `json:"show"`
+		IP        string `json:"ip"`
+		Hostname  string `json:"hostName"`
+		GroupName string `json:"groupName"`
+	}
 
-type List map[int]*Host
+	List map[int]*Host
 
-type Group struct {
-	HostsText string `json:"hostsText"`
-	GroupName string `json:"groupName"`
-	Show      bool   `json:"show"`
-	List      List   `json:"list"`
-}
+	Group struct {
+		HostsText string `json:"hostsText"`
+		GroupName string `json:"groupName"`
+		ShowNum   int    `json:"showNum"`
+		HideNum   int    `json:"hideNum"`
+		Show      bool   `json:"show"`
+		List      List   `json:"list"`
+	}
 
-type ListByGroup map[string]Group
+	ListByGroup map[string]Group
 
-type MyHosts struct {
-	Path             string      `json:"path"`
-	HostsText        string      `json:"hosts_text"`
-	InUseHostsText   string      `json:"in_use_hosts_text"`
-	NoInUseHostsText string      `json:"no_in_use_hosts_text"`
-	TotalNum         int         `json:"total_num"`
-	List             List        `json:"list"`
-	ListByGroup      ListByGroup `json:"list_by_group"`
-}
+	MyHosts struct {
+		Path             string      `json:"path"`
+		HostsText        string      `json:"hostsText"`
+		InUseHostsText   string      `json:"inUseHostsText"`
+		NoInUseHostsText string      `json:"noInUseHostsText"`
+		TotalNum         int         `json:"totalNum"`
+		List             List        `json:"list"`
+		ListByGroup      ListByGroup `json:"listByGroup"`
+	}
 
-type M map[string]string
+	M map[string]string
+)
 
 func (m *M) toSlice() []string {
 	s := make([]string, 0, len(*m))
@@ -87,9 +91,9 @@ func (f *MyHosts) Split() {
 			continue
 		}
 		show := !strings.Contains(res[1], "#")
-		for _, hostname := range strings.Split(res[3], " ") {
-			hostname = strings.TrimSpace(hostname)
-			if hostname == "" {
+		for _, hostName := range strings.Split(res[3], " ") {
+			hostName = strings.TrimSpace(hostName)
+			if hostName == "" {
 				continue
 			}
 			if !strings.Contains(res[2], ":") && !strings.Contains(res[2], ".") {
@@ -111,35 +115,42 @@ func (f *MyHosts) Split() {
 					f.ListByGroup[groupName] = Group{
 						HostsText: "",
 						GroupName: groupName,
+						ShowNum:   0,
+						HideNum:   0,
 						Show:      true,
 						List:      map[int]*Host{},
 					}
 				}
-				if !show {
-					groupInfo := f.ListByGroup[groupName]
+
+				groupInfo := f.ListByGroup[groupName]
+				if show {
+					groupInfo.AddShowNum()
+				} else {
+					groupInfo.AddHideNum()
 					groupInfo.Switch(false)
-					f.ListByGroup[groupName] = groupInfo
 				}
+				f.ListByGroup[groupName] = groupInfo
+
 				f.TotalNum++
 				f.ListByGroup[groupName].List[f.TotalNum] = &Host{
 					ID:        f.TotalNum,
 					Show:      show,
 					IP:        res[2],
-					Hostname:  hostname,
+					Hostname:  hostName,
 					GroupName: groupName,
 				}
 				f.List[f.TotalNum] = &Host{
 					ID:        f.TotalNum,
 					Show:      show,
 					IP:        res[2],
-					Hostname:  hostname,
+					Hostname:  hostName,
 					GroupName: groupName,
 				}
 				log.Println(Host{
 					ID:        f.TotalNum,
 					Show:      show,
 					IP:        res[2],
-					Hostname:  hostname,
+					Hostname:  hostName,
 					GroupName: groupName,
 				})
 			}
@@ -187,6 +198,8 @@ func (f *MyHosts) SetGroup(groupName, hostsText string) {
 	f.ListByGroup[groupName] = Group{
 		HostsText: "",
 		GroupName: groupName,
+		ShowNum:   0,
+		HideNum:   0,
 		Show:      true,
 		List:      map[int]*Host{},
 	}
@@ -198,9 +211,9 @@ func (f *MyHosts) SetGroup(groupName, hostsText string) {
 			continue
 		}
 		show := !strings.Contains(res[1], "#")
-		for _, hostname := range strings.Split(res[3], " ") {
-			hostname = strings.TrimSpace(hostname)
-			if hostname == "" {
+		for _, hostName := range strings.Split(res[3], " ") {
+			hostName = strings.TrimSpace(hostName)
+			if hostName == "" {
 				continue
 			}
 			if !strings.Contains(res[2], ":") && !strings.Contains(res[2], ".") {
@@ -211,7 +224,7 @@ func (f *MyHosts) SetGroup(groupName, hostsText string) {
 				ID:        f.TotalNum,
 				Show:      show,
 				IP:        res[2],
-				Hostname:  hostname,
+				Hostname:  hostName,
 				GroupName: groupName,
 			}
 		}
@@ -220,19 +233,24 @@ func (f *MyHosts) SetGroup(groupName, hostsText string) {
 	groupInfo := f.ListByGroup[groupName]
 	groupInfo.Switch(true)
 	for _, row := range groupInfo.List {
-		if !row.Show {
+		if row.Show {
+			groupInfo.AddShowNum()
+		} else {
 			groupInfo.Switch(false)
+			groupInfo.AddHideNum()
 		}
 	}
 	f.ListByGroup[groupName] = groupInfo
 }
 
-func (f *MyHosts) Add(groupName string, ip string, hostname string) {
+func (f *MyHosts) Add(groupName string, ip string, hostName string) {
 	f.TotalNum++
 	if _, ok := f.ListByGroup[groupName]; !ok {
 		f.ListByGroup[groupName] = Group{
 			HostsText: "",
 			GroupName: groupName,
+			ShowNum:   0,
+			HideNum:   0,
 			Show:      true,
 			List:      map[int]*Host{},
 		}
@@ -241,7 +259,7 @@ func (f *MyHosts) Add(groupName string, ip string, hostname string) {
 		ID:        f.TotalNum,
 		Show:      true,
 		IP:        ip,
-		Hostname:  hostname,
+		Hostname:  hostName,
 		GroupName: groupName,
 	}
 }
@@ -265,7 +283,13 @@ func (f *MyHosts) SwitchByGroupName(groupName string, show bool) {
 	for id := range groupInfo.List {
 		groupInfo.List[id].Switch(show)
 		f.List[id].Switch(show)
-
+	}
+	if show {
+		groupInfo.ShowNum = len(groupInfo.List)
+		groupInfo.HideNum = 0
+	} else {
+		groupInfo.ShowNum = 0
+		groupInfo.HideNum = len(groupInfo.List)
 	}
 	f.ListByGroup[groupName] = groupInfo
 }
@@ -280,9 +304,14 @@ func (f *MyHosts) SwitchByHostNameId(groupName string, hostNameID int, show bool
 	}
 	groupInfo.List[hostNameID].Switch(show)
 	groupInfo.Switch(true)
+	groupInfo.ShowNum = 0
+	groupInfo.HideNum = 0
 	for _, row := range groupInfo.List {
-		if !row.Show {
+		if row.Show {
+			groupInfo.AddShowNum()
+		} else {
 			groupInfo.Switch(false)
+			groupInfo.AddHideNum()
 		}
 	}
 	f.ListByGroup[groupName] = groupInfo
@@ -300,6 +329,8 @@ func (f *MyHosts) SetGroupNameByOldGroupName(oldGroupName, groupName string) {
 		f.ListByGroup[groupName] = Group{
 			HostsText: "",
 			GroupName: groupName,
+			ShowNum:   0,
+			HideNum:   0,
 			Show:      true,
 			List:      map[int]*Host{},
 		}
@@ -317,9 +348,14 @@ func (f *MyHosts) SetGroupNameByOldGroupName(oldGroupName, groupName string) {
 
 	groupInfo := f.ListByGroup[groupName]
 	groupInfo.Switch(true)
+	groupInfo.ShowNum = 0
+	groupInfo.HideNum = 0
 	for _, row := range groupInfo.List {
-		if !row.Show {
+		if row.Show {
+			groupInfo.AddShowNum()
+		} else {
 			groupInfo.Switch(false)
+			groupInfo.AddHideNum()
 		}
 	}
 	f.ListByGroup[groupName] = groupInfo
@@ -350,4 +386,12 @@ func (h *Host) SetGroupName(groupName string) {
 
 func (g *Group) Switch(show bool) {
 	g.Show = show
+}
+
+func (g *Group) AddHideNum() {
+	g.HideNum++
+}
+
+func (g *Group) AddShowNum() {
+	g.ShowNum++
 }

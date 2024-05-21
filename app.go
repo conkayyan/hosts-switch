@@ -33,14 +33,9 @@ func (a *App) startup(ctx context.Context) {
 	a.myHosts.Print()
 }
 
-// GetList .
-func (a *App) GetList() hosts.List {
-	return a.myHosts.List
-}
-
-// GetListByGroup .
-func (a *App) GetListByGroup() hosts.ListByGroup {
-	return a.myHosts.ListByGroup
+// GetMyHosts .
+func (a *App) GetMyHosts() *hosts.MyHosts {
+	return a.myHosts
 }
 
 // GetHostsText .
@@ -93,8 +88,8 @@ func (a *App) SaveAllGroupHosts(groupName, hostsText string) string {
 }
 
 // AddHost .
-func (a *App) AddHost(groupName string, ip string, hostname string) string {
-	a.myHosts.Add(groupName, ip, hostname)
+func (a *App) AddHost(groupName string, ip string, hostName string) string {
+	a.myHosts.Add(groupName, ip, hostName)
 	a.myHosts.PrettyByGroup()
 	a.myHosts.Split()
 	a.myHosts.PrettyByGroup()
