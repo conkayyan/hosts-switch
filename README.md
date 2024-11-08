@@ -1,4 +1,6 @@
-# README
+## README.md
+
+- zh_CN [简体中文](README.zh_CN.md)
 
 ## About
 
@@ -12,7 +14,7 @@ This is a simple desktop application developed based on [wails](https://wails.io
 ## Environmental Requirements
 Based on go v1.21+, wails v2.8.2, nodejs v20. 
 
-Wails applications built for Windows have a runtime requirement on the Microsoft WebView2 Runtime. Windows 11 will have this installed by default, but some machines won't.
+Wails applications built for Windows have a runtime requirement on the Microsoft WebView2 Runtime. Windows 11 installs WebView2 by default, but some systems do not.
 
 ## Installing Wails
 Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
