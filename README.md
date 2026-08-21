@@ -1,3 +1,5 @@
+
+
 ## README.md
 
 - zh_CN [简体中文](README.zh_CN.md)
@@ -17,7 +19,7 @@ Based on go v1.22+, wails v2.9.2, nodejs v22+.
 Wails applications built for Windows have a runtime requirement on the Microsoft WebView2 Runtime. Windows 11 installs WebView2 by default, but some systems do not.
 
 ## Installing Wails
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
+Run `go install github.com/wailsapp/wails/v2/cmd/wails@v2.9.2` to install the Wails CLI.
 
 ## Live Development
 
